@@ -71,7 +71,32 @@
         
         <div class="result" id="result"></div>
     </div>
-    <!-- Section 2: True Distance Calculation -->
+<!-- Section 4: Calculate Target Coordinates from Observer -->
+<div class="section">
+    <h2>Calculate Target Coordinates from Observer</h2>
+    <label for="observer_x">Observer X Coordinate:</label>
+    <input type="number" id="observer_x" placeholder="Enter observer X coordinate">
+    
+    <label for="observer_y">Observer Y Coordinate:</label>
+    <input type="number" id="observer_y" placeholder="Enter observer Y coordinate">
+    
+    <label for="observer_bearing">Bearing from Observer (degrees):</label>
+    <input type="number" id="observer_bearing" placeholder="Enter bearing from observer">
+    
+    <label for="observer_distance">Distance from Observer (meters):</label>
+    <input type="number" id="observer_distance" placeholder="Enter distance from observer">
+
+    <label for="your_x">Your X Coordinate:</label>
+    <input type="number" id="your_x" placeholder="Enter your X coordinate">
+    
+    <label for="your_y">Your Y Coordinate:</label>
+    <input type="number" id="your_y" placeholder="Enter your Y coordinate">
+    
+    <button onclick="calculateTargetDetails()">Calculate Target Details</button>
+    
+    <div class="result" id="targetResult"></div>
+</div>
+	<!-- Section 2: True Distance Calculation -->
     <div class="section">
         <h2>Calculate True Distance with Elevation Difference</h2>
         <label for="horizontalDistance">Enter Horizontal Distance (meters):</label>
@@ -294,7 +319,44 @@ function calculateTrueDistance() {
     const trueDistance = Math.sqrt(Math.pow(horizontalDistance, 2) + Math.pow(elevationDifference, 2));
     resultDiv.innerHTML = `<p>True Distance: ${trueDistance.toFixed(2)} meters</p>`;
 }
+function calculateTargetDetails() {
+    const observer_x = parseFloat(document.getElementById("observer_x").value);
+    const observer_y = parseFloat(document.getElementById("observer_y").value);
+    const observer_bearing = parseFloat(document.getElementById("observer_bearing").value);
+    const observer_distance = parseFloat(document.getElementById("observer_distance").value);
+    const your_x = parseFloat(document.getElementById("your_x").value);
+    const your_y = parseFloat(document.getElementById("your_y").value);
+    const resultDiv = document.getElementById("targetResult");
 
+    // Clear previous results
+    resultDiv.innerHTML = "";
+
+    if (isNaN(observer_x) || isNaN(observer_y) || isNaN(observer_bearing) || isNaN(observer_distance) || isNaN(your_x) || isNaN(your_y)) {
+        resultDiv.innerHTML = "<p>Please enter valid values for all fields.</p>";
+        return;
+    }
+
+    // Convert bearing to radians
+    const bearing_rad = observer_bearing * (Math.PI / 180);
+
+    // Calculate target coordinates
+    const target_x = observer_x + observer_distance * Math.cos(bearing_rad);
+    const target_y = observer_y + observer_distance * Math.sin(bearing_rad);
+
+    // Calculate distance from your position to the target
+    const distance_to_target = Math.sqrt(Math.pow(target_x - your_x, 2) + Math.pow(target_y - your_y, 2));
+
+    // Calculate bearing from your position to the target
+    let bearing_to_target = Math.atan2(target_y - your_y, target_x - your_x) * (180 / Math.PI);
+    if (bearing_to_target < 0) {
+        bearing_to_target += 360;
+    }
+
+    // Display the results
+    resultDiv.innerHTML = `<p>Target Coordinates: (${target_x.toFixed(2)}, ${target_y.toFixed(2)})</p>`;
+    resultDiv.innerHTML += `<p>Distance from Your Position to Target: ${distance_to_target.toFixed(2)} meters</p>`;
+    resultDiv.innerHTML += `<p>Bearing from Your Position to Target: ${bearing_to_target.toFixed(2)}°</p>`;
+}
 // Function to calculate distance between coordinates
 function calculateCoordinateDistance() {
     const x1 = parseFloat(document.getElementById("x1").value);
