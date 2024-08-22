@@ -71,9 +71,12 @@
         
         <div class="result" id="result"></div>
     </div>
-<!-- Section 4: Calculate Target Coordinates from Observer -->
+<!-- Combined Section: Calculate Target Details with Elevation -->
 <div class="section">
-    <h2>Calculate Target Coordinates from Observer</h2>
+    <h2>Calculate Target Details with Elevation</h2>
+    
+    <!-- Observer Details -->
+    <h3>Observer Details (Optional)</h3>
     <label for="observer_x">Observer X Coordinate:</label>
     <input type="number" id="observer_x" placeholder="Enter observer X coordinate">
     
@@ -85,56 +88,39 @@
     
     <label for="observer_distance">Distance from Observer (meters):</label>
     <input type="number" id="observer_distance" placeholder="Enter distance from observer">
+    
+    <label for="observer_elevation">Observer Elevation (meters):</label>
+    <input type="number" id="observer_elevation" placeholder="Enter observer elevation">
 
+    <label for="elevation_difference">Elevation Difference to Target (meters):</label>
+    <input type="number" id="elevation_difference" placeholder="Enter elevation difference from observer to target">
+
+    <!-- Target Coordinates -->
+    <h3>Target Coordinates (If Known)</h3>
+    <label for="target_x">Target X Coordinate:</label>
+    <input type="number" id="target_x" placeholder="Enter target X coordinate">
+    
+    <label for="target_y">Target Y Coordinate:</label>
+    <input type="number" id="target_y" placeholder="Enter target Y coordinate">
+
+    <label for="target_elevation">Target Elevation (meters):</label>
+    <input type="number" id="target_elevation" placeholder="Enter target elevation">
+
+    <!-- Your Coordinates -->
+    <h3>Your Coordinates</h3>
     <label for="your_x">Your X Coordinate:</label>
     <input type="number" id="your_x" placeholder="Enter your X coordinate">
     
     <label for="your_y">Your Y Coordinate:</label>
     <input type="number" id="your_y" placeholder="Enter your Y coordinate">
     
+    <label for="your_elevation">Your Elevation (meters):</label>
+    <input type="number" id="your_elevation" placeholder="Enter your elevation">
+
     <button onclick="calculateTargetDetails()">Calculate Target Details</button>
     
     <div class="result" id="targetResult"></div>
 </div>
-	<!-- Section 2: True Distance Calculation -->
-    <div class="section">
-        <h2>Calculate True Distance with Elevation Difference</h2>
-        <label for="horizontalDistance">Enter Horizontal Distance (meters):</label>
-        <input type="number" id="horizontalDistance" placeholder="Enter horizontal distance in meters">
-        
-        <label for="elevationDifference">Enter Elevation Difference (meters):</label>
-        <input type="number" id="elevationDifference" placeholder="Enter elevation difference in meters">
-        
-        <button onclick="calculateTrueDistance()">Calculate True Distance</button>
-        
-        <div class="result" id="trueDistanceResult"></div>
-    </div>
-    <!-- Section 3: Distance Calculation Between Coordinates -->
-    <div class="section">
-        <h2>Calculate Distance Between Coordinates</h2>
-        <label for="x1">Your X Coordinate:</label>
-        <input type="number" id="x1" placeholder="Enter your X coordinate">
-        
-        <label for="y1">Your Y Coordinate:</label>
-        <input type="number" id="y1" placeholder="Enter your Y coordinate">
-        
-        <label for="x2">Target X Coordinate:</label>
-        <input type="number" id="x2" placeholder="Enter target X coordinate">
-        
-        <label for="y2">Target Y Coordinate:</label>
-        <input type="number" id="y2" placeholder="Enter target Y coordinate">
-        
-        <label for="elevation1">Your Elevation (meters) (Optional):</label>
-        <input type="number" id="elevation1" placeholder="Enter your elevation in meters">
-        
-        <label for="elevation2">Target Elevation (meters) (Optional):</label>
-        <input type="number" id="elevation2" placeholder="Enter target elevation in meters">
-        
-        <button onclick="calculateCoordinateDistance()">Calculate Distance</button>
-        
-        <div class="result" id="coordinateDistanceResult"></div>
-    </div>
-
 <script>
 // Empty lookup table to be filled in
 const lookupTable = [
@@ -324,27 +310,54 @@ function calculateTargetDetails() {
     const observer_y = parseFloat(document.getElementById("observer_y").value);
     const observer_bearing = parseFloat(document.getElementById("observer_bearing").value);
     const observer_distance = parseFloat(document.getElementById("observer_distance").value);
+    const observer_elevation = parseFloat(document.getElementById("observer_elevation").value);
+    const elevation_difference = parseFloat(document.getElementById("elevation_difference").value);
+
+    let target_x = parseFloat(document.getElementById("target_x").value);
+    let target_y = parseFloat(document.getElementById("target_y").value);
+    let target_elevation = parseFloat(document.getElementById("target_elevation").value);
+
     const your_x = parseFloat(document.getElementById("your_x").value);
     const your_y = parseFloat(document.getElementById("your_y").value);
+    const your_elevation = parseFloat(document.getElementById("your_elevation").value);
+    
     const resultDiv = document.getElementById("targetResult");
 
     // Clear previous results
     resultDiv.innerHTML = "";
 
-    if (isNaN(observer_x) || isNaN(observer_y) || isNaN(observer_bearing) || isNaN(observer_distance) || isNaN(your_x) || isNaN(your_y)) {
-        resultDiv.innerHTML = "<p>Please enter valid values for all fields.</p>";
+    if (isNaN(your_x) || isNaN(your_y) || isNaN(your_elevation)) {
+        resultDiv.innerHTML = "<p>Please enter valid values for your coordinates and elevation.</p>";
         return;
     }
 
-    // Convert bearing to radians
-    const bearing_rad = observer_bearing * (Math.PI / 180);
+    // If target coordinates are not entered, calculate them using observer details
+    if (isNaN(target_x) || isNaN(target_y)) {
+        if (isNaN(observer_x) || isNaN(observer_y) || isNaN(observer_bearing) || isNaN(observer_distance)) {
+            resultDiv.innerHTML = "<p>Please enter valid observer details or target coordinates.</p>";
+            return;
+        }
 
-    // Calculate target coordinates
-    const target_x = observer_x + observer_distance * Math.cos(bearing_rad);
-    const target_y = observer_y + observer_distance * Math.sin(bearing_rad);
+        // Convert bearing to radians
+        const bearing_rad = observer_bearing * (Math.PI / 180);
+
+        // Calculate target coordinates
+        target_x = observer_x + observer_distance * Math.cos(bearing_rad);
+        target_y = observer_y + observer_distance * Math.sin(bearing_rad);
+    }
+
+    // If target elevation is not entered, calculate it using observer elevation and elevation difference
+    if (isNaN(target_elevation)) {
+        if (isNaN(observer_elevation) || isNaN(elevation_difference)) {
+            resultDiv.innerHTML = "<p>Please enter valid observer elevation and elevation difference.</p>";
+            return;
+        }
+        target_elevation = observer_elevation + elevation_difference;
+    }
 
     // Calculate distance from your position to the target
-    const distance_to_target = Math.sqrt(Math.pow(target_x - your_x, 2) + Math.pow(target_y - your_y, 2));
+    const horizontal_distance_to_target = Math.sqrt(Math.pow(target_x - your_x, 2) + Math.pow(target_y - your_y, 2));
+    const true_distance_to_target = Math.sqrt(Math.pow(horizontal_distance_to_target, 2) + Math.pow(target_elevation - your_elevation, 2));
 
     // Calculate bearing from your position to the target
     let bearing_to_target = Math.atan2(target_y - your_y, target_x - your_x) * (180 / Math.PI);
@@ -354,39 +367,10 @@ function calculateTargetDetails() {
 
     // Display the results
     resultDiv.innerHTML = `<p>Target Coordinates: (${target_x.toFixed(2)}, ${target_y.toFixed(2)})</p>`;
-    resultDiv.innerHTML += `<p>Distance from Your Position to Target: ${distance_to_target.toFixed(2)} meters</p>`;
+    resultDiv.innerHTML += `<p>Target Elevation: ${target_elevation.toFixed(2)} meters</p>`;
+    resultDiv.innerHTML += `<p>Horizontal Distance from Your Position to Target: ${horizontal_distance_to_target.toFixed(2)} meters</p>`;
+    resultDiv.innerHTML += `<p>True Distance from Your Position to Target: ${true_distance_to_target.toFixed(2)} meters</p>`;
     resultDiv.innerHTML += `<p>Bearing from Your Position to Target: ${bearing_to_target.toFixed(2)}°</p>`;
-}
-// Function to calculate distance between coordinates
-function calculateCoordinateDistance() {
-    const x1 = parseFloat(document.getElementById("x1").value);
-    const y1 = parseFloat(document.getElementById("y1").value);
-    const x2 = parseFloat(document.getElementById("x2").value);
-    const y2 = parseFloat(document.getElementById("y2").value);
-    const elevation1 = parseFloat(document.getElementById("elevation1").value);
-    const elevation2 = parseFloat(document.getElementById("elevation2").value);
-    const resultDiv = document.getElementById("coordinateDistanceResult");
-
-    // Clear previous results
-    resultDiv.innerHTML = "";
-
-    if (isNaN(x1) || isNaN(y1) || isNaN(x2) || isNaN(y2)) {
-               resultDiv.innerHTML = "<p>Please enter valid values for both coordinates.</p>";
-        return;
-    }
-
-    // Calculate horizontal distance
-    const horizontalDistance = Math.sqrt(Math.pow(x2 - x1, 2) + Math.pow(y2 - y1, 2));
-    let resultText = `<p>Horizontal Distance: ${horizontalDistance.toFixed(2)} meters</p>`;
-
-    // Calculate true distance if elevation is provided
-    if (!isNaN(elevation1) && !isNaN(elevation2)) {
-        const elevationDifference = elevation2 - elevation1;
-        const trueDistance = Math.sqrt(Math.pow(horizontalDistance, 2) + Math.pow(elevationDifference, 2));
-        resultText += `<p>True Distance (with Elevation): ${trueDistance.toFixed(2)} meters</p>`;
-    }
-
-    resultDiv.innerHTML = resultText;
 }
 </script>
 </body>
