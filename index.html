@@ -304,10 +304,6 @@ function calculateTargetDetails() {
     const observer_elevation = parseFloat(document.getElementById("observer_elevation").value) || 0;
     const elevation_difference = parseFloat(document.getElementById("elevation_difference").value) || 0;
 
-    let target_x = parseFloat(document.getElementById("target_x").value);
-    let target_y = parseFloat(document.getElementById("target_y").value);
-    let target_elevation = parseFloat(document.getElementById("target_elevation").value);
-
     const your_x = parseFloat(document.getElementById("your_x").value) || 0;
     const your_y = parseFloat(document.getElementById("your_y").value) || 0;
     const your_elevation = parseFloat(document.getElementById("your_elevation").value) || 0;
@@ -323,26 +319,11 @@ function calculateTargetDetails() {
         return;
     }
 
-    // If target coordinates are not provided, calculate them using observer details
-    if (isNaN(target_x) || isNaN(target_y)) {
-        if (isNaN(observer_x) || isNaN(observer_y) || isNaN(observer_bearing) || isNaN(observer_distance)) {
-            resultDiv.innerHTML = "<p>Please enter valid observer details or target coordinates.</p>";
-            return;
-        }
-
-        // Convert bearing to radians
-        const bearing_rad = observer_bearing * (Math.PI / 180);
-
-        // Calculate target coordinates using observer details
-        target_x = observer_x + observer_distance * Math.cos(bearing_rad);
-        target_y = observer_y + observer_distance * Math.sin(bearing_rad);
-
-        // Calculate target elevation using observer elevation and elevation difference
-        target_elevation = observer_elevation + elevation_difference;
-    }
-
-    // Ensure target elevation is properly initialized
-    if (isNaN(target_elevation)) target_elevation = observer_elevation + elevation_difference;
+    // Calculate target coordinates using observer details
+    const bearing_rad = observer_bearing * (Math.PI / 180);
+    const target_x = observer_x + observer_distance * Math.cos(bearing_rad);
+    const target_y = observer_y + observer_distance * Math.sin(bearing_rad);
+    const target_elevation = observer_elevation + elevation_difference;
 
     // Calculate the horizontal distance to the target
     const horizontal_distance_to_target = Math.sqrt(Math.pow(target_x - your_x, 2) + Math.pow(target_y - your_y, 2));
