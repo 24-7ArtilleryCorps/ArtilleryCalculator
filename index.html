@@ -362,26 +362,24 @@ function calculateTargetDetails() {
     const playerX = parseFloat(document.getElementById("your_x").value) || 0;
     const playerY = parseFloat(document.getElementById("your_y").value) || 0;
 
-    observer = { x: observerX, y: observerY }; // Assign global variables
+    observer = { x: observerX, y: observerY };
     target = { x: targetX, y: targetY };
     player = { x: playerX, y: playerY };
 
-    // Call the function to draw the map
     drawMap(observer, target, player);
 
-    // Display some results (optional)
-    const resultDiv = document.getElementById('targetResult');
     const distanceToTarget = Math.sqrt(Math.pow(targetX - playerX, 2) + Math.pow(targetY - playerY, 2));
     let bearingToTarget = Math.atan2(targetY - playerY, targetX - playerX) * (180 / Math.PI);
 
-    // Adjust the bearing to be in the range 0° to 360°
     if (bearingToTarget < 0) {
         bearingToTarget += 360;
     }
 
-    resultDiv.innerHTML = `<p>Distance to Target: ${distanceToTarget.toFixed(2)} meters</p>`;
-    resultDiv.innerHTML += `<p>Bearing to Target: ${bearingToTarget.toFixed(2)}°</p>`;
-}
+    document.getElementById('targetResult').innerHTML = `<p>Distance to Target: ${distanceToTarget.toFixed(2)} meters</p>`;
+    document.getElementById('targetResult').innerHTML += `<p>Bearing to Target: ${bearingToTarget.toFixed(2)}°</p>`;
+        // Automatically fill the distance in the barrel elevation section
+    document.getElementById('distance').value = distanceToTarget.toFixed(2);
+
 
 // Function to calculate elevation based on distance
 function calculateElevation() {
@@ -389,19 +387,34 @@ function calculateElevation() {
     const muzzleVelocity = parseFloat(document.getElementById("muzzleVelocity").value);
     const fireMode = document.getElementById("fireMode").value;
 
-    if (isNaN(distance) || isNaN(muzzleVelocity)) {
+    if (isNaN(distance) || isNaN(muzzleVelocity) || distance <= 0 || muzzleVelocity <= 0) {
         document.getElementById('result').innerHTML = "<p class='error'>Please enter valid numeric values for distance and muzzle velocity.</p>";
         return;
     }
 
-    let elevation;
-    if (fireMode === "direct") {
-        elevation = Math.atan(distance / muzzleVelocity) * (180 / Math.PI);
-    } else if (fireMode === "indirect") {
-        elevation = Math.atan(distance / (2 * muzzleVelocity)) * (180 / Math.PI); // Simplified formula
+    const g = 9.81; // Gravity in m/s^2
+
+    // Calculate direct fire angle in radians
+    let directAngleRad = Math.asin((distance * g) / (muzzleVelocity ** 2)) / 2;
+
+    // Convert to degrees
+    let directAngleDeg = directAngleRad * (180 / Math.PI);
+
+    // Convert to mils
+    let directAngleMil = directAngleDeg / 0.05625;
+
+    let elevationMil;
+
+    // If indirect fire is selected, calculate the indirect angle
+    if (fireMode === 'indirect') {
+        let indirectAngleDeg = 90 - directAngleDeg;
+        let indirectAngleMil = indirectAngleDeg / 0.05625;
+        elevationMil = indirectAngleMil > 1309 ? 1309 : indirectAngleMil;
+    } else {
+        elevationMil = directAngleMil > 1309 ? 1309 : directAngleMil;
     }
 
-    document.getElementById('result').innerHTML = `<p>Elevation: ${elevation.toFixed(2)} degrees</p>`;
+    document.getElementById('result').innerHTML = `<p>Elevation: ${elevationMil.toFixed(2)} mils</p>`;
 }
 
 // Function to export the map as an image
