@@ -174,7 +174,7 @@
 
 </div>
 <script>
-// Function to calculate scaling factor for the map based on coordinates
+// Function to calculate scaling factor for the map based on coordinates, with safe margins
 function calculateScaleAndOffset(coordinates, canvasSize) {
     const xValues = coordinates.map(coord => coord.x);
     const yValues = coordinates.map(coord => coord.y);
@@ -184,12 +184,14 @@ function calculateScaleAndOffset(coordinates, canvasSize) {
     const minY = Math.min(...yValues);
     const maxY = Math.max(...yValues);
 
-    const scaleX = canvasSize.width / (maxX - minX + 20); // Add padding
-    const scaleY = canvasSize.height / (maxY - minY + 20); // Add padding
-    const scale = Math.min(scaleX, scaleY);
+    // Add padding for safe margins
+    const padding = 20; // Safe margin in pixels
+    const scaleX = (canvasSize.width - 2 * padding) / (maxX - minX); // Adjust scale to account for padding
+    const scaleY = (canvasSize.height - 2 * padding) / (maxY - minY); // Adjust scale to account for padding
+    const scale = Math.min(scaleX, scaleY); // Use the smaller scale to fit everything
 
-    const offsetX = (canvasSize.width - (maxX - minX) * scale) / 2 - minX * scale;
-    const offsetY = (canvasSize.height - (maxY - minY) * scale) / 2 - minY * scale;
+    const offsetX = padding - minX * scale;
+    const offsetY = padding - minY * scale;
 
     return { scale, offsetX, offsetY };
 }
@@ -279,7 +281,6 @@ function calculateTargetDetails() {
     resultDiv.innerHTML = `<p>Distance to Target: ${distanceToTarget.toFixed(2)} meters</p>`;
     resultDiv.innerHTML += `<p>Bearing to Target: ${bearingToTarget.toFixed(2)}°</p>`;
 }
-
 </script>
 </body>
 </html>
