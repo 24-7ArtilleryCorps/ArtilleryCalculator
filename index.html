@@ -335,14 +335,8 @@ function calculateTargetDetails() {
         // Calculate target coordinates using observer details
         target_x = observer_x + observer_distance * Math.cos(bearing_rad);
         target_y = observer_y + observer_distance * Math.sin(bearing_rad);
-    }
 
-    // If target elevation is not entered, calculate it using observer elevation and elevation difference
-    if (isNaN(target_elevation)) {
-        if (isNaN(observer_elevation) || isNaN(elevation_difference)) {
-            resultDiv.innerHTML = "<p>Please enter valid observer elevation and elevation difference.</p>";
-            return;
-        }
+        // Assign target elevation if not already provided
         target_elevation = observer_elevation + elevation_difference;
     }
 
@@ -374,6 +368,7 @@ function calculateTargetDetails() {
     // Draw the map
     drawMap(observer, target, player);
 }
+
 
 
 // Function to calculate scaling factor for the map based on coordinates
