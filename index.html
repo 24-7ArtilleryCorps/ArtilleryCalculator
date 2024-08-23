@@ -297,48 +297,52 @@ function calculateElevation() {
 
 // Function to calculate target details and then draw the map
 function calculateTargetDetails() {
-    const observer_x = parseFloat(document.getElementById("observer_x").value);
-    const observer_y = parseFloat(document.getElementById("observer_y").value);
-    const observer_bearing = parseFloat(document.getElementById("observer_bearing").value);
-    const observer_distance = parseFloat(document.getElementById("observer_distance").value);
-    const observer_elevation = parseFloat(document.getElementById("observer_elevation").value);
-    const elevation_difference = parseFloat(document.getElementById("elevation_difference").value);
+    const observer_x = parseFloat(document.getElementById("observer_x").value) || 0;
+    const observer_y = parseFloat(document.getElementById("observer_y").value) || 0;
+    const observer_bearing = parseFloat(document.getElementById("observer_bearing").value) || 0;
+    const observer_distance = parseFloat(document.getElementById("observer_distance").value) || 0;
+    const observer_elevation = parseFloat(document.getElementById("observer_elevation").value) || 0;
+    const elevation_difference = parseFloat(document.getElementById("elevation_difference").value) || 0;
 
     let target_x = parseFloat(document.getElementById("target_x").value);
     let target_y = parseFloat(document.getElementById("target_y").value);
     let target_elevation = parseFloat(document.getElementById("target_elevation").value);
 
-    const your_x = parseFloat(document.getElementById("your_x").value);
-    const your_y = parseFloat(document.getElementById("your_y").value);
-    const your_elevation = parseFloat(document.getElementById("your_elevation").value);
+    const your_x = parseFloat(document.getElementById("your_x").value) || 0;
+    const your_y = parseFloat(document.getElementById("your_y").value) || 0;
+    const your_elevation = parseFloat(document.getElementById("your_elevation").value) || 0;
     
     const resultDiv = document.getElementById("targetResult");
 
     // Clear previous results
     resultDiv.innerHTML = "";
 
+    // Validate your coordinates and elevation
     if (isNaN(your_x) || isNaN(your_y) || isNaN(your_elevation)) {
         resultDiv.innerHTML = "<p>Please enter valid values for your coordinates and elevation.</p>";
         return;
     }
 
-    // If target coordinates are not entered, calculate them using observer details
+    // If target coordinates are not provided, calculate them using observer details
     if (isNaN(target_x) || isNaN(target_y)) {
         if (isNaN(observer_x) || isNaN(observer_y) || isNaN(observer_bearing) || isNaN(observer_distance)) {
             resultDiv.innerHTML = "<p>Please enter valid observer details or target coordinates.</p>";
             return;
         }
 
-        // Convert bearing to radians (since trigonometric functions in JS use radians)
+        // Convert bearing to radians
         const bearing_rad = observer_bearing * (Math.PI / 180);
 
         // Calculate target coordinates using observer details
         target_x = observer_x + observer_distance * Math.cos(bearing_rad);
         target_y = observer_y + observer_distance * Math.sin(bearing_rad);
 
-        // Assign target elevation if not already provided
+        // Calculate target elevation using observer elevation and elevation difference
         target_elevation = observer_elevation + elevation_difference;
     }
+
+    // Ensure target elevation is properly initialized
+    if (isNaN(target_elevation)) target_elevation = observer_elevation + elevation_difference;
 
     // Calculate the horizontal distance to the target
     const horizontal_distance_to_target = Math.sqrt(Math.pow(target_x - your_x, 2) + Math.pow(target_y - your_y, 2));
