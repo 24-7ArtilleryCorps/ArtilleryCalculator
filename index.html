@@ -91,13 +91,45 @@
             background-color: #000000;
             border: 2px solid #00ff00;
             margin-top: 20px;
+            cursor: grab;
         }
+
+        .legend {
+            color: #00ff00;
+            font-family: 'Courier New', Courier, monospace;
+            margin-top: 20px;
+        }
+
+        .legend div {
+            display: inline-block;
+            margin-right: 20px;
+        }
+
+        .legend span {
+            display: inline-block;
+            width: 10px;
+            height: 10px;
+            margin-right: 5px;
+        }
+
+        #tooltip {
+            position: absolute;
+            padding: 5px;
+            background-color: #333;
+            color: #fff;
+            border-radius: 5px;
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.2s;
+        }
+
     </style>
 </head>
 <body>
 
 <div class="container">
     <h1>Artillery Elevation Calculator</h1>
+
     <!-- Section 1: Calculate Barrel Elevation Based on Distance -->
     <div class="section">
         <h2>Calculate Barrel Elevation</h2>
@@ -172,9 +204,27 @@
     <!-- Canvas for visualization -->
     <canvas id="mapCanvas"></canvas>
 
+    <!-- Tooltip for showing coordinates -->
+    <div id="tooltip"></div>
+
+    <!-- Legend -->
+    <div class="legend">
+        <div><span style="background-color: cyan;"></span>Observer</div>
+        <div><span style="background-color: red;"></span>Target</div>
+        <div><span style="background-color: lime;"></span>Player</div>
+    </div>
+
+    <!-- Button to export the map as an image -->
+    <button onclick="exportMap()">Export Map as Image</button>
 </div>
 <script>
-// Function to calculate scaling factor for the map based on coordinates, with safe margins
+let scale = 1;
+let translatePos = { x: 0, y: 0 };
+let isDragging = false;
+let dragStart = { x: 0, y: 0 };
+let tooltip = document.getElementById('tooltip');
+
+// Function to calculate scaling factor for the map based on coordinates
 function calculateScaleAndOffset(coordinates, canvasSize) {
     const xValues = coordinates.map(coord => coord.x);
     const yValues = coordinates.map(coord => coord.y);
@@ -184,16 +234,38 @@ function calculateScaleAndOffset(coordinates, canvasSize) {
     const minY = Math.min(...yValues);
     const maxY = Math.max(...yValues);
 
-    // Add padding for safe margins
     const padding = 20; // Safe margin in pixels
     const scaleX = (canvasSize.width - 2 * padding) / (maxX - minX); // Adjust scale to account for padding
     const scaleY = (canvasSize.height - 2 * padding) / (maxY - minY); // Adjust scale to account for padding
-    const scale = Math.min(scaleX, scaleY); // Use the smaller scale to fit everything
+    const scale = Math.min(scaleX, scaleY);
 
     const offsetX = padding - minX * scale;
     const offsetY = padding - minY * scale;
 
     return { scale, offsetX, offsetY };
+}
+
+// Function to draw grid on the canvas
+function drawGrid(ctx, canvasSize, scale, offsetX, offsetY) {
+    const gridSize = 50; // Adjust grid size as needed
+    ctx.strokeStyle = '#444'; // Grid color
+    ctx.lineWidth = 1;
+
+    // Draw vertical grid lines
+    for (let x = 0; x <= canvasSize.width; x += gridSize * scale) {
+        ctx.beginPath();
+        ctx.moveTo(x + offsetX % (gridSize * scale), 0);
+        ctx.lineTo(x + offsetX % (gridSize * scale), canvasSize.height);
+        ctx.stroke();
+    }
+
+    // Draw horizontal grid lines
+    for (let y = 0; y <= canvasSize.height; y += gridSize * scale) {
+        ctx.beginPath();
+        ctx.moveTo(0, y + offsetY % (gridSize * scale));
+        ctx.lineTo(canvasSize.width, y + offsetY % (gridSize * scale));
+        ctx.stroke();
+    }
 }
 
 // Function to draw the map based on input coordinates
@@ -207,6 +279,9 @@ function drawMap(observer, target, player) {
 
     // Clear the canvas
     ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    // Draw the grid
+    drawGrid(ctx, canvasSize, scale, offsetX, offsetY);
 
     // Draw the observer
     ctx.fillStyle = 'cyan';
@@ -244,6 +319,14 @@ function drawMap(observer, target, player) {
     ctx.moveTo(player.x * scale + offsetX, player.y * scale + offsetY);
     ctx.lineTo(target.x * scale + offsetX, target.y * scale + offsetY);
     ctx.stroke();
+
+    // Display distance between points
+    const distanceOT = Math.sqrt(Math.pow(target.x - observer.x, 2) + Math.pow(target.y - observer.y, 2)) * scale;
+    const distancePT = Math.sqrt(Math.pow(target.x - player.x, 2) + Math.pow(target.y - player.y, 2)) * scale;
+
+    ctx.fillStyle = '#ffffff';
+    ctx.fillText(`${distanceOT.toFixed(2)} px`, (observer.x + target.x) * scale / 2 + offsetX, (observer.y + target.y) * scale / 2 + offsetY);
+    ctx.fillText(`${distancePT.toFixed(2)} px`, (player.x + target.x) * scale / 2 + offsetX, (player.y + target.y) * scale / 2 + offsetY);
 }
 
 // Function to calculate target details and then draw the map
@@ -281,6 +364,70 @@ function calculateTargetDetails() {
     resultDiv.innerHTML = `<p>Distance to Target: ${distanceToTarget.toFixed(2)} meters</p>`;
     resultDiv.innerHTML += `<p>Bearing to Target: ${bearingToTarget.toFixed(2)}°</p>`;
 }
+
+// Zoom and Pan Functionality
+document.getElementById('mapCanvas').addEventListener('wheel', (event) => {
+    const scaleAmount = 1.1;
+    if (event.deltaY < 0) {
+        scale *= scaleAmount;
+    } else {
+        scale /= scaleAmount;
+    }
+    event.preventDefault(); // Prevent the page from scrolling
+    calculateTargetDetails(); // Re-draw the map with the new scale
+});
+
+document.getElementById('mapCanvas').addEventListener('mousedown', (event) => {
+    isDragging = true;
+    dragStart.x = event.clientX - translatePos.x;
+    dragStart.y = event.clientY - translatePos.y;
+    document.getElementById('mapCanvas').style.cursor = 'grabbing';
+});
+
+document.getElementById('mapCanvas').addEventListener('mousemove', (event) => {
+    if (isDragging) {
+        translatePos.x = event.clientX - dragStart.x;
+        translatePos.y = event.clientY - dragStart.y;
+        calculateTargetDetails(); // Re-draw the map with the new position
+    }
+});
+
+document.getElementById('mapCanvas').addEventListener('mouseup', () => {
+    isDragging = false;
+    document.getElementById('mapCanvas').style.cursor = 'grab';
+});
+
+// Function to show tooltip with coordinates on hover
+document.getElementById('mapCanvas').addEventListener('mousemove', (event) => {
+    const canvas = document.getElementById('mapCanvas');
+    const rect = canvas.getBoundingClientRect();
+    const x = (event.clientX - rect.left - translatePos.x) / scale;
+    const y = (event.clientY - rect.top - translatePos.y) / scale;
+
+    let hovered = false;
+
+    // Check if hovering over the observer, target, or player
+    const elements = [
+        { label: 'Observer', x: observer.x, y: observer.y },
+        { label: 'Target', x: target.x, y: target.y },
+        { label: 'Player', x: player.x, y: player.y }
+    ];
+
+    for (const element of elements) {
+        if (Math.abs(x - element.x) < 5 && Math.abs(y - element.y) < 5) {
+            tooltip.style.left = event.clientX + 10 + 'px';
+            tooltip.style.top = event.clientY + 10 + 'px';
+            tooltip.innerHTML = `${element.label}: (${element.x.toFixed(2)}, ${element.y.toFixed(2)})`;
+            tooltip.style.opacity = 1;
+            hovered = true;
+            break;
+        }
+    }
+
+    if (!hovered) {
+        tooltip.style.opacity = 0;
+    }
+});
 </script>
 </body>
 </html>
