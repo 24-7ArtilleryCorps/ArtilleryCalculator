@@ -324,7 +324,10 @@ function calculateTargetDetails() {
 
     // Calculate bearing from your position to the target
     let angle = Math.atan2(target_y - your_y, target_x - your_x) * (180 / Math.PI);
-    let bearing_to_target = (angle + 360) % 360; // Adjust bearing calculation
+    let bearing_to_target = (angle + 360) % 360;
+
+    // If the calculated bearing is off, try adding 90° (or another offset) to adjust:
+    bearing_to_target = (bearing_to_target + 90) % 360;
 
     // Display the results
     resultDiv.innerHTML = `<p>Target Coordinates: (${target_x.toFixed(2)}, ${target_y.toFixed(2)})</p>`;
@@ -344,6 +347,7 @@ function calculateTargetDetails() {
     // Draw the map
     drawMap(observer, target, player);
 }
+
 
 
 
