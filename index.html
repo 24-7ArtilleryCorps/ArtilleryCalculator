@@ -174,18 +174,37 @@
 
 </div>
 <script>
+// Function to calculate scaling factor for the map based on coordinates
+function calculateScaleAndOffset(coordinates, canvasSize) {
+    const xValues = coordinates.map(coord => coord.x);
+    const yValues = coordinates.map(coord => coord.y);
+
+    const minX = Math.min(...xValues);
+    const maxX = Math.max(...xValues);
+    const minY = Math.min(...yValues);
+    const maxY = Math.max(...yValues);
+
+    const scaleX = canvasSize.width / (maxX - minX + 20); // Add padding
+    const scaleY = canvasSize.height / (maxY - minY + 20); // Add padding
+    const scale = Math.min(scaleX, scaleY);
+
+    const offsetX = (canvasSize.width - (maxX - minX) * scale) / 2 - minX * scale;
+    const offsetY = (canvasSize.height - (maxY - minY) * scale) / 2 - minY * scale;
+
+    return { scale, offsetX, offsetY };
+}
+
 // Function to draw the map based on input coordinates
 function drawMap(observer, target, player) {
     const canvas = document.getElementById('mapCanvas');
     const ctx = canvas.getContext('2d');
 
+    // Calculate scale and offset
+    const canvasSize = { width: canvas.width, height: canvas.height };
+    const { scale, offsetX, offsetY } = calculateScaleAndOffset([observer, target, player], canvasSize);
+
     // Clear the canvas
     ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-    // Scale the coordinates to fit within the canvas
-    const scale = 0.1;  // Adjust this scale based on your coordinate system
-    const offsetX = canvas.width / 2;
-    const offsetY = canvas.height / 2;
 
     // Draw the observer
     ctx.fillStyle = 'cyan';
@@ -211,7 +230,7 @@ function drawMap(observer, target, player) {
     // Draw lines between observer and target, and player and target
     ctx.strokeStyle = '#00ff00';
     ctx.lineWidth = 2;
-    
+
     // Line from observer to target
     ctx.beginPath();
     ctx.moveTo(observer.x * scale + offsetX, observer.y * scale + offsetY);
@@ -244,7 +263,16 @@ function calculateTargetDetails() {
     const target = { x: targetX, y: targetY };
     const player = { x: playerX, y: playerY };
 
+    // Call the function to draw the map
     drawMap(observer, target, player);
+
+    // Display some results (optional)
+    const resultDiv = document.getElementById('targetResult');
+    const distanceToTarget = Math.sqrt(Math.pow(targetX - playerX, 2) + Math.pow(targetY - playerY, 2));
+    const bearingToTarget = Math.atan2(targetY - playerY, targetX - playerX) * (180 / Math.PI);
+
+    resultDiv.innerHTML = `<p>Distance to Target: ${distanceToTarget.toFixed(2)} meters</p>`;
+    resultDiv.innerHTML += `<p>Bearing to Target: ${bearingToTarget.toFixed(2)}°</p>`;
 }
 </script>
 </body>
