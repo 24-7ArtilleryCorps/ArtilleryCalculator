@@ -86,6 +86,7 @@
         /* Style for the canvas */
         #mapCanvas {
             width: 100%;
+            max-width: 800px;
             height: 400px;
             background-color: #000000;
             border: 2px solid #00ff00;
@@ -97,7 +98,6 @@
 
 <div class="container">
     <h1>Artillery Elevation Calculator</h1>
-
     <!-- Section 1: Calculate Barrel Elevation Based on Distance -->
     <div class="section">
         <h2>Calculate Barrel Elevation</h2>
@@ -118,7 +118,7 @@
         <div class="result" id="result"></div>
     </div>
 
-    <!-- Section 3: Calculate Target Details with Elevation -->
+    <!-- Section 2: Calculate Target Details with Elevation -->
     <div class="section">
         <h2>Calculate Target Details with Elevation</h2>
         
@@ -173,217 +173,7 @@
     <canvas id="mapCanvas"></canvas>
 
 </div>
-
-
-<!-- Scripts for Section 1 and Section 2 -->
 <script>
-// Function to validate input and calculate barrel elevation based on distance and fire mode
-function calculateElevation() {
-    const distanceInput = document.getElementById("distance");
-    const muzzleVelocityInput = document.getElementById("muzzleVelocity");
-    const fireMode = document.getElementById("fireMode").value;
-    const resultDiv = document.getElementById("result");
-
-    // Clear previous results and error messages
-    resultDiv.innerHTML = "";
-    distanceInput.classList.remove("error");
-    muzzleVelocityInput.classList.remove("error");
-
-    const distance = parseFloat(distanceInput.value);
-    const muzzleVelocity = parseFloat(muzzleVelocityInput.value);
-
-    // Input validation
-    if (isNaN(distance) || distance <= 0) {
-        distanceInput.classList.add("error");
-        resultDiv.innerHTML = "<p>Please enter a valid distance greater than 0.</p>";
-        return;
-    }
-
-    if (isNaN(muzzleVelocity) || muzzleVelocity <= 0) {
-        muzzleVelocityInput.classList.add("error");
-        resultDiv.innerHTML = "<p>Please enter a valid muzzle velocity greater than 0.</p>";
-        return;
-    }
-
-    const g = 9.81; // Gravity in m/s^2
-
-    // Calculate direct fire angle in radians
-    let directAngleRad = Math.asin((distance * g) / (muzzleVelocity ** 2)) / 2;
-
-    // Convert to degrees
-    let directAngleDeg = directAngleRad * (180 / Math.PI);
-
-    // Convert to mils
-    let directAngleMil = directAngleDeg / 0.05625;
-
-    let elevationMil;
-
-    // If indirect fire is selected, calculate the indirect angle
-    if (fireMode === 'indirect') {
-        let indirectAngleDeg = 90 - directAngleDeg;
-        let indirectAngleMil = indirectAngleDeg / 0.05625;
-
-        // Cap the indirect fire at the turret's maximum elevation of 1309 mils
-        elevationMil = indirectAngleMil > 1309 ? 1309 : indirectAngleMil;
-    } else {
-        elevationMil = directAngleMil;
-    }
-
-    // Display the result
-    resultDiv.innerHTML = `<p>Elevation: ${elevationMil.toFixed(2)} mils</p>`;
-}
-
-// Function to validate input, calculate true distance with elevation difference, and feed it to Section 1
-function calculateTrueDistance() {
-    const horizontalDistanceInput = document.getElementById("horizontalDistance");
-    const elevationDifferenceInput = document.getElementById("elevationDifference");
-    const resultDiv = document.getElementById("trueDistanceResult");
-
-    // Clear previous results and error messages
-    resultDiv.innerHTML = "";
-    horizontalDistanceInput.classList.remove("error");
-    elevationDifferenceInput.classList.remove("error");
-
-    const horizontalDistance = parseFloat(horizontalDistanceInput.value);
-    const elevationDifference = parseFloat(elevationDifferenceInput.value);
-
-    // Input validation
-    if (isNaN(horizontalDistance) || horizontalDistance <= 0) {
-        horizontalDistanceInput.classList.add("error");
-        resultDiv.innerHTML = "<p>Please enter a valid horizontal distance greater than 0.</p>";
-        return;
-    }
-
-    if (isNaN(elevationDifference)) {
-        elevationDifferenceInput.classList.add("error");
-        resultDiv.innerHTML = "<p>Please enter a valid elevation difference.</p>";
-        return;
-    }
-
-    // Calculate true distance using Pythagorean theorem
-    const trueDistance = Math.sqrt(Math.pow(horizontalDistance, 2) + Math.pow(elevationDifference, 2));
-    resultDiv.innerHTML = `<p>True Distance: ${trueDistance.toFixed(2)} meters</p>`;
-
-    // Automatically feed true distance to Section 1
-    document.getElementById("distance").value = trueDistance.toFixed(2);
-}
-</script>
- 
-
-<!-- Scripts for Section 3 -->
-<script>
-// Function to validate input, calculate target details based on observer and target coordinates, and feed it to Section 1
-function calculateTargetDetails() {
-    const observerXInput = document.getElementById("observer_x");
-    const observerYInput = document.getElementById("observer_y");
-    const observerBearingInput = document.getElementById("observer_bearing");
-    const observerDistanceInput = document.getElementById("observer_distance");
-    const observerElevationInput = document.getElementById("observer_elevation");
-    const elevationDifferenceInput = document.getElementById("elevation_difference");
-
-    const targetXInput = document.getElementById("target_x");
-    const targetYInput = document.getElementById("target_y");
-    const targetElevationInput = document.getElementById("target_elevation");
-
-    const yourXInput = document.getElementById("your_x");
-    const yourYInput = document.getElementById("your_y");
-    const yourElevationInput = document.getElementById("your_elevation");
-
-    const resultDiv = document.getElementById("targetResult");
-
-    // Clear previous results and error messages
-    resultDiv.innerHTML = "";
-    observerXInput.classList.remove("error");
-    observerYInput.classList.remove("error");
-    observerBearingInput.classList.remove("error");
-    observerDistanceInput.classList.remove("error");
-    observerElevationInput.classList.remove("error");
-    elevationDifferenceInput.classList.remove("error");
-    targetXInput.classList.remove("error");
-    targetYInput.classList.remove("error");
-    targetElevationInput.classList.remove("error");
-    yourXInput.classList.remove("error");
-    yourYInput.classList.remove("error");
-    yourElevationInput.classList.remove("error");
-
-    const yourX = parseFloat(yourXInput.value);
-    const yourY = parseFloat(yourYInput.value);
-    const yourElevation = parseFloat(yourElevationInput.value);
-
-    // Input validation for your coordinates and elevation
-    if (isNaN(yourX) || isNaN(yourY) || isNaN(yourElevation)) {
-        yourXInput.classList.add("error");
-        yourYInput.classList.add("error");
-        yourElevationInput.classList.add("error");
-        resultDiv.innerHTML = "<p>Please enter valid values for your coordinates and elevation.</p>";
-        return;
-    }
-
-    let targetX = parseFloat(targetXInput.value);
-    let targetY = parseFloat(targetYInput.value);
-    let targetElevation = parseFloat(targetElevationInput.value);
-
-    if (isNaN(targetX) || isNaN(targetY)) {
-        // If target coordinates are not entered, calculate them using observer details
-        const observerX = parseFloat(observerXInput.value);
-        const observerY = parseFloat(observerYInput.value);
-        const observerBearing = parseFloat(observerBearingInput.value);
-        const observerDistance = parseFloat(observerDistanceInput.value);
-
-        // Input validation for observer details
-        if (isNaN(observerX) || isNaN(observerY) || isNaN(observerBearing) || isNaN(observerDistance)) {
-            observerXInput.classList.add("error");
-            observerYInput.classList.add("error");
-            observerBearingInput.classList.add("error");
-            observerDistanceInput.classList.add("error");
-            resultDiv.innerHTML = "<p>Please enter valid observer details or target coordinates.</p>";
-            return;
-        }
-
-        // Convert bearing to radians
-        const bearingRad = observerBearing * (Math.PI / 180);
-
-        // Calculate target coordinates
-        targetX = observerX + observerDistance * Math.cos(bearingRad);
-        targetY = observerY + observerDistance * Math.sin(bearingRad);
-    }
-
-    if (isNaN(targetElevation)) {
-        // If target elevation is not entered, calculate it using observer elevation and elevation difference
-        const observerElevation = parseFloat(observerElevationInput.value);
-        const elevationDifference = parseFloat(elevationDifferenceInput.value);
-
-        if (isNaN(observerElevation) || isNaN(elevationDifference)) {
-            observerElevationInput.classList.add("error");
-            elevationDifferenceInput.classList.add("error");
-            resultDiv.innerHTML = "<p>Please enter valid observer elevation and elevation difference.</p>";
-            return;
-        }
-        targetElevation = observerElevation + elevationDifference;
-    }
-
-    // Calculate distance from your position to the target
-    const horizontalDistanceToTarget = Math.sqrt(Math.pow(targetX - yourX, 2) + Math.pow(targetY - yourY, 2));
-    const trueDistanceToTarget = Math.sqrt(Math.pow(horizontalDistanceToTarget, 2) + Math.pow(targetElevation - yourElevation, 2));
-
-    // Calculate bearing from your position to the target
-    let bearingToTarget = Math.atan2(targetY - yourY, targetX - yourX) * (180 / Math.PI);
-    if (bearingToTarget < 0) {
-        bearingToTarget += 360;
-    }
-
-    // Display the results
-    resultDiv.innerHTML = `<p>Target Coordinates: (${targetX.toFixed(2)}, ${targetY.toFixed(2)})</p>`;
-    resultDiv.innerHTML += `<p>Target Elevation: ${targetElevation.toFixed(2)} meters</p>`;
-    resultDiv.innerHTML += `<p>Horizontal Distance from Your Position to Target: ${horizontalDistanceToTarget.toFixed(2)} meters</p>`;
-    resultDiv.innerHTML += `<p>True Distance from Your Position to Target: ${trueDistanceToTarget.toFixed(2)} meters</p>`;
-    resultDiv.innerHTML += `<p>Bearing from Your Position to Target: ${bearingToTarget.toFixed(2)}°</p>`;
-
-    // Automatically feed true distance to Section 1
-    document.getElementById("distance").value = trueDistanceToTarget.toFixed(2);
-}
-</script>
-    <script>
 // Function to draw the map based on input coordinates
 function drawMap(observer, target, player) {
     const canvas = document.getElementById('mapCanvas');
@@ -444,6 +234,12 @@ function calculateTargetDetails() {
     const playerX = parseFloat(document.getElementById("your_x").value);
     const playerY = parseFloat(document.getElementById("your_y").value);
 
+    // Input validation
+    if (isNaN(observerX) || isNaN(observerY) || isNaN(targetX) || isNaN(targetY) || isNaN(playerX) || isNaN(playerY)) {
+        alert("Please enter valid numeric coordinates for all fields.");
+        return;
+    }
+
     const observer = { x: observerX, y: observerY };
     const target = { x: targetX, y: targetY };
     const player = { x: playerX, y: playerY };
@@ -451,8 +247,5 @@ function calculateTargetDetails() {
     drawMap(observer, target, player);
 }
 </script>
-</body>
-</html>
-
 </body>
 </html>
