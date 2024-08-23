@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>24/7 Conflict Ops - Artillery Elevation Calculator</title>
+    <title>Artillery Elevation Calculator</title>
     <style>
         body {
             font-family: 'Courier New', Courier, monospace;
@@ -11,10 +11,21 @@
             padding: 20px;
             background-color: #1a1a1a;
             color: #00ff00;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
         }
 
         .container {
-            max-width: 800px;
+            display: grid;
+            grid-template-areas: 
+                "observer map target"
+                "details map details";
+            grid-template-columns: 1fr 2fr 1fr;
+            grid-template-rows: auto 1fr;
+            gap: 20px;
+            max-width: 1200px;
             margin: auto;
             padding: 20px;
             background-color: #333333;
@@ -66,32 +77,40 @@
             box-shadow: 0 0 15px rgba(0, 255, 0, 0.8);
         }
 
-        .result {
-            margin-top: 20px;
-            padding: 15px;
+        .section {
             background-color: #262626;
+            padding: 15px;
             border-radius: 5px;
             border: 1px solid #00ff00;
-            font-size: 16px;
-            font-family: 'Courier New', Courier, monospace;
             box-shadow: inset 0 0 10px rgba(0, 255, 0, 0.2);
         }
 
-        .error {
-            border-color: red;
-            background-color: #4d0000;
-            color: #ff9999;
+        .observer-section {
+            grid-area: observer;
         }
 
-        /* Style for the canvas */
+        .target-section {
+            grid-area: target;
+        }
+
+        .details-section {
+            grid-area: details;
+        }
+
+        .map-section {
+            grid-area: map;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
         #mapCanvas {
             width: 100%;
-            max-width: 800px;
-            height: 400px;
+            max-width: 600px;
+            height: 600px;
             background-color: #000000;
             border: 2px solid #00ff00;
             margin-top: 20px;
-            cursor: grab;
         }
 
         .legend {
@@ -112,27 +131,46 @@
             margin-right: 5px;
         }
 
-        #tooltip {
-            position: absolute;
-            padding: 5px;
-            background-color: #333;
-            color: #fff;
-            border-radius: 5px;
-            pointer-events: none;
-            opacity: 0;
-            transition: opacity 0.2s;
-        }
-
     </style>
 </head>
 <body>
 
 <div class="container">
-    <h1>24/7 Conflict Ops-Artillery Elevation Calculator</h1>
-   <a href="https://discord.gg/grkfgh3EAh" rel="external">https://discord.gg/grkfgh3EAh</a>
+    <div class="observer-section section">
+        <h2>Observer Details</h2>
+        <label for="observer_x">Observer X Coordinate:</label>
+        <input type="number" id="observer_x" placeholder="Enter observer X coordinate" value="0">
+        
+        <label for="observer_y">Observer Y Coordinate:</label>
+        <input type="number" id="observer_y" placeholder="Enter observer Y coordinate" value="0">
+        
+        <label for="observer_bearing">Bearing from Observer (degrees):</label>
+        <input type="number" id="observer_bearing" placeholder="Enter bearing from observer" value="0">
+        
+        <label for="observer_distance">Distance from Observer (meters):</label>
+        <input type="number" id="observer_distance" placeholder="Enter distance from observer" value="0">
+        
+        <label for="observer_elevation">Observer Elevation (meters):</label>
+        <input type="number" id="observer_elevation" placeholder="Enter observer elevation" value="0">
+    </div>
 
-    <!-- Section 1: Calculate Barrel Elevation Based on Distance -->
-    <div class="section">
+    <div class="map-section">
+        <canvas id="mapCanvas"></canvas>
+    </div>
+
+    <div class="target-section section">
+        <h2>Target Details</h2>
+        <label for="target_x">Target X Coordinate:</label>
+        <input type="number" id="target_x" placeholder="Enter target X coordinate" value="0">
+        
+        <label for="target_y">Target Y Coordinate:</label>
+        <input type="number" id="target_y" placeholder="Enter target Y coordinate" value="0">
+
+        <label for="target_elevation">Target Elevation (meters):</label>
+        <input type="number" id="target_elevation" placeholder="Enter target elevation" value="0">
+    </div>
+
+    <div class="details-section section">
         <h2>Calculate Barrel Elevation</h2>
         <label for="distance">Enter Distance (meters):</label>
         <input type="number" id="distance" placeholder="Enter distance in meters">
@@ -149,82 +187,23 @@
         <button onclick="calculateElevation()">Calculate Elevation</button>
         
         <div class="result" id="result"></div>
+
+        <!-- Legend -->
+        <div class="legend">
+            <div><span style="background-color: cyan;"></span>Observer</div>
+            <div><span style="background-color: red;"></span>Target</div>
+            <div><span style="background-color: lime;"></span>Player</div>
+        </div>
+
+        <!-- Button to export the map as an image -->
+        <button onclick="exportMap()">Export Map as Image</button>
     </div>
-
-    <!-- Section 2: Calculate Target Details with Elevation -->
-    <div class="section">
-        <h2>Calculate Target Details with Elevation</h2>
-        
-        <!-- Observer Details -->
-        <h3>Observer Details (Optional)</h3>
-        <label for="observer_x">Observer X Coordinate:</label>
-        <input type="number" id="observer_x" placeholder="Enter observer X coordinate">
-        
-        <label for="observer_y">Observer Y Coordinate:</label>
-        <input type="number" id="observer_y" placeholder="Enter observer Y coordinate">
-        
-        <label for="observer_bearing">Bearing from Observer (degrees):</label>
-        <input type="number" id="observer_bearing" placeholder="Enter bearing from observer">
-        
-        <label for="observer_distance">Distance from Observer (meters):</label>
-        <input type="number" id="observer_distance" placeholder="Enter distance from observer">
-        
-        <label for="observer_elevation">Observer Elevation (meters):</label>
-        <input type="number" id="observer_elevation" placeholder="Enter observer elevation">
-
-        <label for="elevation_difference">Elevation Difference to Target (meters):</label>
-        <input type="number" id="elevation_difference" placeholder="Enter elevation difference from observer to target">
-
-        <!-- Target Coordinates -->
-        <h3>Target Coordinates (If Known)</h3>
-        <label for="target_x">Target X Coordinate:</label>
-        <input type="number" id="target_x" placeholder="Enter target X coordinate">
-        
-        <label for="target_y">Target Y Coordinate:</label>
-        <input type="number" id="target_y" placeholder="Enter target Y coordinate">
-
-        <label for="target_elevation">Target Elevation (meters):</label>
-        <input type="number" id="target_elevation" placeholder="Enter target elevation">
-
-        <!-- Your Coordinates -->
-        <h3>Your Coordinates</h3>
-        <label for="your_x">Your X Coordinate:</label>
-        <input type="number" id="your_x" placeholder="Enter your X coordinate">
-        
-        <label for="your_y">Your Y Coordinate:</label>
-        <input type="number" id="your_y" placeholder="Enter your Y coordinate">
-        
-        <label for="your_elevation">Your Elevation (meters):</label>
-        <input type="number" id="your_elevation" placeholder="Enter your elevation">
-
-        <button onclick="calculateTargetDetails()">Calculate Target Details</button>
-        
-        <div class="result" id="targetResult"></div>
-    </div>
-
-    <!-- Canvas for visualization -->
-    <canvas id="mapCanvas"></canvas>
-
-    <!-- Tooltip for showing coordinates -->
-    <div id="tooltip"></div>
-
-    <!-- Legend -->
-    <div class="legend">
-        <div><span style="background-color: cyan;"></span>Observer</div>
-        <div><span style="background-color: red;"></span>Target</div>
-        <div><span style="background-color: lime;"></span>Player</div>
-    </div>
-
-    <!-- Button to export the map as an image -->
-    <button onclick="exportMap()">Export Map as Image</button>
 </div>
+
 <script>
-let scale = 1;
-let translatePos = { x: 0, y: 0 };
-let isDragging = false;
-let dragStart = { x: 0, y: 0 };
-let observer, target, player; // Declare globally so they can be accessed by multiple functions
-let tooltip = document.getElementById('tooltip');
+let observer = { x: 0, y: 0 };
+let target = { x: 0, y: 0 };
+let player = { x: 0, y: 0 }; // Assuming player coordinates will be added later
 
 // Function to calculate scaling factor for the map based on coordinates
 function calculateScaleAndOffset(coordinates, canvasSize) {
@@ -236,7 +215,7 @@ function calculateScaleAndOffset(coordinates, canvasSize) {
     const minY = Math.min(...yValues);
     const maxY = Math.max(...yValues);
 
-    const padding = 20; // Safe margin in pixels
+    const padding = 50; // Increase padding for safe margins
     const scaleX = (canvasSize.width - 2 * padding) / (maxX - minX); // Adjust scale to account for padding
     const scaleY = (canvasSize.height - 2 * padding) / (maxY - minY); // Adjust scale to account for padding
     const scale = Math.min(scaleX, scaleY);
@@ -247,27 +226,35 @@ function calculateScaleAndOffset(coordinates, canvasSize) {
     return { scale, offsetX, offsetY };
 }
 
-// Function to draw grid on the canvas
-function drawGrid(ctx, canvasSize, scale, offsetX, offsetY) {
-    const gridSize = 50; // Adjust grid size as needed
-    ctx.strokeStyle = '#444'; // Grid color
-    ctx.lineWidth = 1;
+// Function to draw a compass rose
+function drawCompassRose(ctx, centerX, centerY, radius) {
+    ctx.strokeStyle = '#00ff00';
+    ctx.lineWidth = 2;
 
-    // Draw vertical grid lines
-    for (let x = 0; x <= canvasSize.width; x += gridSize * scale) {
-        ctx.beginPath();
-        ctx.moveTo(x + offsetX % (gridSize * scale), 0);
-        ctx.lineTo(x + offsetX % (gridSize * scale), canvasSize.height);
-        ctx.stroke();
-    }
+    // Draw the circle
+    ctx.beginPath();
+    ctx.arc(centerX, centerY, radius, 0, 2 * Math.PI);
+    ctx.stroke();
 
-    // Draw horizontal grid lines
-    for (let y = 0; y <= canvasSize.height; y += gridSize * scale) {
-        ctx.beginPath();
-        ctx.moveTo(0, y + offsetY % (gridSize * scale));
-        ctx.lineTo(canvasSize.width, y + offsetY % (gridSize * scale));
-        ctx.stroke();
-    }
+    // Draw the North line
+    ctx.beginPath();
+    ctx.moveTo(centerX, centerY - radius);
+    ctx.lineTo(centerX, centerY + radius);
+    ctx.stroke();
+
+    // Draw the East line
+    ctx.beginPath();
+    ctx.moveTo(centerX - radius, centerY);
+    ctx.lineTo(centerX + radius, centerY);
+    ctx.stroke();
+
+    // Draw the North label
+    ctx.fillStyle = '#00ff00';
+    ctx.font = '16px Courier New';
+    ctx.fillText('N', centerX - 5, centerY - radius - 10);
+
+    // Draw the East label
+    ctx.fillText('E', centerX + radius + 5, centerY + 5);
 }
 
 // Function to draw the map based on input coordinates
@@ -316,37 +303,26 @@ function drawMap(observer, target, player) {
     ctx.lineTo(target.x * scale + offsetX, target.y * scale + offsetY);
     ctx.stroke();
 
-    // Line from player to target
+    // Line from player to target (if needed)
     ctx.beginPath();
     ctx.moveTo(player.x * scale + offsetX, player.y * scale + offsetY);
     ctx.lineTo(target.x * scale + offsetX, target.y * scale + offsetY);
     ctx.stroke();
 
-    // Display distance between points
-    const distanceOT = Math.sqrt(Math.pow(target.x - observer.x, 2) + Math.pow(target.y - observer.y, 2)) * scale;
-    const distancePT = Math.sqrt(Math.pow(target.x - player.x, 2) + Math.pow(target.y - player.y, 2)) * scale;
-
-    ctx.fillStyle = '#ffffff';
-    ctx.fillText(`${distanceOT.toFixed(2)} px`, (observer.x + target.x) * scale / 2 + offsetX, (observer.y + target.y) * scale / 2 + offsetY);
-    ctx.fillText(`${distancePT.toFixed(2)} px`, (player.x + target.x) * scale / 2 + offsetX, (player.y + target.y) * scale / 2 + offsetY);
+    // Draw the compass rose in the bottom right corner
+    drawCompassRose(ctx, canvas.width - 60, canvas.height - 60, 50);
 }
 
 // Function to calculate target details and then draw the map
 function calculateTargetDetails() {
-    const observerX = parseFloat(document.getElementById("observer_x").value);
-    const observerY = parseFloat(document.getElementById("observer_y").value);
-    const targetX = parseFloat(document.getElementById("target_x").value);
-    const targetY = parseFloat(document.getElementById("target_y").value);
-    const playerX = parseFloat(document.getElementById("your_x").value);
-    const playerY = parseFloat(document.getElementById("your_y").value);
+    const observerX = parseFloat(document.getElementById("observer_x").value) || 0;
+    const observerY = parseFloat(document.getElementById("observer_y").value) || 0;
+    const targetX = parseFloat(document.getElementById("target_x").value) || 0;
+    const targetY = parseFloat(document.getElementById("target_y").value) || 0;
+    const playerX = parseFloat(document.getElementById("your_x").value) || 0;
+    const playerY = parseFloat(document.getElementById("your_y").value) || 0;
 
-    // Input validation
-    if (isNaN(observerX) || isNaN(observerY) || isNaN(targetX) || isNaN(targetY) || isNaN(playerX) || isNaN(playerY)) {
-        alert("Please enter valid numeric coordinates for all fields.");
-        return;
-    }
-
-    observer = { x: observerX, y: observerY }; // Assign global variables
+    observer = { x: observerX, y: observerY };
     target = { x: targetX, y: targetY };
     player = { x: playerX, y: playerY };
 
@@ -354,7 +330,7 @@ function calculateTargetDetails() {
     drawMap(observer, target, player);
 
     // Display some results (optional)
-    const resultDiv = document.getElementById('targetResult');
+    const resultDiv = document.getElementById('result');
     const distanceToTarget = Math.sqrt(Math.pow(targetX - playerX, 2) + Math.pow(targetY - playerY, 2));
     let bearingToTarget = Math.atan2(targetY - playerY, targetX - playerX) * (180 / Math.PI);
 
@@ -367,68 +343,6 @@ function calculateTargetDetails() {
     resultDiv.innerHTML += `<p>Bearing to Target: ${bearingToTarget.toFixed(2)}°</p>`;
 }
 
-// Zoom and Pan Functionality
-document.getElementById('mapCanvas').addEventListener('wheel', (event) => {
-    const scaleAmount = 1.1;
-    if (event.deltaY < 0) {
-        scale *= scaleAmount;
-    } else {
-        scale /= scaleAmount;
-    }
-    event.preventDefault(); // Prevent the page from scrolling
-    calculateTargetDetails(); // Re-draw the map with the new scale
-});
-
-document.getElementById('mapCanvas').addEventListener('mousedown', (event) => {
-    isDragging = true;
-    dragStart.x = event.clientX - translatePos.x;
-    dragStart.y = event.clientY - translatePos.y;
-    document.getElementById('mapCanvas').style.cursor = 'grabbing';
-});
-
-document.getElementById('mapCanvas').addEventListener('mousemove', (event) => {
-    if (isDragging) {
-        translatePos.x = event.clientX - dragStart.x;
-        translatePos.y = event.clientY - dragStart.y;
-        calculateTargetDetails(); // Re-draw the map with the new position
-    }
-
-    // Tooltip functionality
-    const canvas = document.getElementById('mapCanvas');
-    const rect = canvas.getBoundingClientRect();
-    const x = (event.clientX - rect.left - translatePos.x) / scale;
-    const y = (event.clientY - rect.top - translatePos.y) / scale;
-
-    let hovered = false;
-
-    // Check if hovering over the observer, target, or player
-    const elements = [
-        { label: 'Observer', x: observer.x, y: observer.y },
-        { label: 'Target', x: target.x, y: target.y },
-               { label: 'Player', x: player.x, y: player.y }
-    ];
-
-    for (const element of elements) {
-        if (Math.abs(x - element.x) < 5 && Math.abs(y - element.y) < 5) {
-            tooltip.style.left = event.clientX + 10 + 'px';
-            tooltip.style.top = event.clientY + 10 + 'px';
-            tooltip.innerHTML = `${element.label}: (${element.x.toFixed(2)}, ${element.y.toFixed(2)})`;
-            tooltip.style.opacity = 1;
-            hovered = true;
-            break;
-        }
-    }
-
-    if (!hovered) {
-        tooltip.style.opacity = 0;
-    }
-});
-
-document.getElementById('mapCanvas').addEventListener('mouseup', () => {
-    isDragging = false;
-    document.getElementById('mapCanvas').style.cursor = 'grab';
-});
-
 // Function to export the map as an image
 function exportMap() {
     const canvas = document.getElementById('mapCanvas');
@@ -437,6 +351,9 @@ function exportMap() {
     link.download = 'artillery_map.png';
     link.click();
 }
+
+// Initial draw
+calculateTargetDetails();
 </script>
 </body>
 </html>
