@@ -21,6 +21,7 @@
             border: 2px solid #00ff00;
             border-radius: 5px;
             box-shadow: 0 0 20px rgba(0, 255, 0, 0.2);
+            text-align: center;
         }
 
         h1, h2, h3 {
@@ -83,6 +84,26 @@
             color: #ff9999;
         }
 
+        .discord-link {
+            color: #00ff00;
+            font-size: 18px;
+            text-decoration: none;
+            display: block;
+            margin-top: 10px;
+            font-weight: bold;
+        }
+
+        .discord-link:hover {
+            color: #00cc00;
+        }
+
+        .server-image {
+            width: 100%;
+            max-width: 300px;
+            margin: 20px auto;
+            display: block;
+        }
+
         /* Style for the canvas */
         #mapCanvas {
             width: 100%;
@@ -128,6 +149,11 @@
 
 <div class="container">
     <h1>Artillery Elevation Calculator</h1>
+    <!-- Server Image -->
+    <img src="/mnt/data/Logo maker project.png" alt="Server Logo" class="server-image">
+
+    <!-- Discord Link -->
+    <a href="https://discord.gg/grkfgh3EAh" class="discord-link" target="_blank">Join our Discord: https://discord.gg/grkfgh3EAh</a>
 
     <!-- Section 1: Calculate Barrel Elevation Based on Distance -->
     <div class="section">
