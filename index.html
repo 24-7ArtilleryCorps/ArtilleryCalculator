@@ -6,58 +6,90 @@
     <title>Artillery Elevation Calculator</title>
     <style>
         body {
-            font-family: Arial, sans-serif;
+            font-family: 'Courier New', Courier, monospace;
             margin: 0;
             padding: 20px;
-            background-color: #f4f4f4;
+            background-color: #1a1a1a;
+            color: #00ff00;
         }
+
         .container {
             max-width: 800px;
             margin: auto;
             padding: 20px;
-            background-color: #fff;
-            border-radius: 8px;
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            background-color: #333333;
+            border: 2px solid #00ff00;
+            border-radius: 5px;
+            box-shadow: 0 0 20px rgba(0, 255, 0, 0.2);
         }
+
         h1, h2, h3 {
+            color: #00ff00;
             text-align: center;
+            text-shadow: 0 0 10px #00ff00;
         }
+
         label {
             font-weight: bold;
+            color: #00ff00;
+            text-shadow: 0 0 5px #00ff00;
         }
+
         input[type="number"], select {
             width: 100%;
             padding: 10px;
             margin: 10px 0;
-            border-radius: 4px;
-            border: 1px solid #ccc;
+            border-radius: 3px;
+            border: 1px solid #00ff00;
+            background-color: #000000;
+            color: #00ff00;
+            font-family: 'Courier New', Courier, monospace;
+            box-shadow: inset 0 0 10px rgba(0, 255, 0, 0.2);
         }
+
         button {
             width: 100%;
             padding: 10px;
-            background-color: #28a745;
-            color: #fff;
-            border: none;
-            border-radius: 4px;
+            background-color: #00ff00;
+            color: #000000;
+            border: 2px solid #00ff00;
+            border-radius: 3px;
             cursor: pointer;
             font-size: 16px;
+            box-shadow: 0 0 10px rgba(0, 255, 0, 0.5);
+            transition: background-color 0.3s ease;
+            font-family: 'Courier New', Courier, monospace;
         }
+
         button:hover {
-            background-color: #218838;
+            background-color: #00cc00;
+            box-shadow: 0 0 15px rgba(0, 255, 0, 0.8);
         }
+
         .result {
             margin-top: 20px;
+            padding: 15px;
+            background-color: #262626;
+            border-radius: 5px;
+            border: 1px solid #00ff00;
+            font-size: 16px;
+            font-family: 'Courier New', Courier, monospace;
+            box-shadow: inset 0 0 10px rgba(0, 255, 0, 0.2);
         }
-        .result p {
-            background-color: #e9ecef;
-            padding: 10px;
-            border-radius: 4px;
-        }
-        .section {
-            margin-bottom: 40px;
-        }
+
         .error {
             border-color: red;
+            background-color: #4d0000;
+            color: #ff9999;
+        }
+
+        /* Style for the canvas */
+        #mapCanvas {
+            width: 100%;
+            height: 400px;
+            background-color: #000000;
+            border: 2px solid #00ff00;
+            margin-top: 20px;
         }
     </style>
 </head>
@@ -85,19 +117,63 @@
         
         <div class="result" id="result"></div>
     </div>
-    <!-- Section 2: Calculate True Distance with Elevation Difference -->
+
+    <!-- Section 3: Calculate Target Details with Elevation -->
     <div class="section">
-        <h2>Calculate True Distance with Elevation Difference</h2>
-        <label for="horizontalDistance">Enter Horizontal Distance (meters):</label>
-        <input type="number" id="horizontalDistance" placeholder="Enter horizontal distance in meters">
+        <h2>Calculate Target Details with Elevation</h2>
         
-        <label for="elevationDifference">Enter Elevation Difference (meters):</label>
-        <input type="number" id="elevationDifference" placeholder="Enter elevation difference in meters">
+        <!-- Observer Details -->
+        <h3>Observer Details (Optional)</h3>
+        <label for="observer_x">Observer X Coordinate:</label>
+        <input type="number" id="observer_x" placeholder="Enter observer X coordinate">
         
-        <button onclick="calculateTrueDistance()">Calculate True Distance</button>
+        <label for="observer_y">Observer Y Coordinate:</label>
+        <input type="number" id="observer_y" placeholder="Enter observer Y coordinate">
         
-        <div class="result" id="trueDistanceResult"></div>
+        <label for="observer_bearing">Bearing from Observer (degrees):</label>
+        <input type="number" id="observer_bearing" placeholder="Enter bearing from observer">
+        
+        <label for="observer_distance">Distance from Observer (meters):</label>
+        <input type="number" id="observer_distance" placeholder="Enter distance from observer">
+        
+        <label for="observer_elevation">Observer Elevation (meters):</label>
+        <input type="number" id="observer_elevation" placeholder="Enter observer elevation">
+
+        <label for="elevation_difference">Elevation Difference to Target (meters):</label>
+        <input type="number" id="elevation_difference" placeholder="Enter elevation difference from observer to target">
+
+        <!-- Target Coordinates -->
+        <h3>Target Coordinates (If Known)</h3>
+        <label for="target_x">Target X Coordinate:</label>
+        <input type="number" id="target_x" placeholder="Enter target X coordinate">
+        
+        <label for="target_y">Target Y Coordinate:</label>
+        <input type="number" id="target_y" placeholder="Enter target Y coordinate">
+
+        <label for="target_elevation">Target Elevation (meters):</label>
+        <input type="number" id="target_elevation" placeholder="Enter target elevation">
+
+        <!-- Your Coordinates -->
+        <h3>Your Coordinates</h3>
+        <label for="your_x">Your X Coordinate:</label>
+        <input type="number" id="your_x" placeholder="Enter your X coordinate">
+        
+        <label for="your_y">Your Y Coordinate:</label>
+        <input type="number" id="your_y" placeholder="Enter your Y coordinate">
+        
+        <label for="your_elevation">Your Elevation (meters):</label>
+        <input type="number" id="your_elevation" placeholder="Enter your elevation">
+
+        <button onclick="calculateTargetDetails()">Calculate Target Details</button>
+        
+        <div class="result" id="targetResult"></div>
     </div>
+
+    <!-- Canvas for visualization -->
+    <canvas id="mapCanvas"></canvas>
+
+</div>
+
 
 <!-- Scripts for Section 1 and Section 2 -->
 <script>
@@ -192,57 +268,7 @@ function calculateTrueDistance() {
     document.getElementById("distance").value = trueDistance.toFixed(2);
 }
 </script>
-    <!-- Section 3: Calculate Target Details with Elevation -->
-    <div class="section">
-        <h2>Calculate Target Details with Elevation</h2>
-        
-        <!-- Observer Details -->
-        <h3>Observer Details (Optional)</h3>
-        <label for="observer_x">Observer X Coordinate:</label>
-        <input type="number" id="observer_x" placeholder="Enter observer X coordinate">
-        
-        <label for="observer_y">Observer Y Coordinate:</label>
-        <input type="number" id="observer_y" placeholder="Enter observer Y coordinate">
-        
-        <label for="observer_bearing">Bearing from Observer (degrees):</label>
-        <input type="number" id="observer_bearing" placeholder="Enter bearing from observer">
-        
-        <label for="observer_distance">Distance from Observer (meters):</label>
-        <input type="number" id="observer_distance" placeholder="Enter distance from observer">
-        
-        <label for="observer_elevation">Observer Elevation (meters):</label>
-        <input type="number" id="observer_elevation" placeholder="Enter observer elevation">
-
-        <label for="elevation_difference">Elevation Difference to Target (meters):</label>
-        <input type="number" id="elevation_difference" placeholder="Enter elevation difference from observer to target">
-
-        <!-- Target Coordinates -->
-        <h3>Target Coordinates (If Known)</h3>
-        <label for="target_x">Target X Coordinate:</label>
-        <input type="number" id="target_x" placeholder="Enter target X coordinate">
-        
-        <label for="target_y">Target Y Coordinate:</label>
-        <input type="number" id="target_y" placeholder="Enter target Y coordinate">
-
-        <label for="target_elevation">Target Elevation (meters):</label
- <input type="number" id="target_elevation" placeholder="Enter target elevation">
-
-        <!-- Your Coordinates -->
-        <h3>Your Coordinates</h3>
-        <label for="your_x">Your X Coordinate:</label>
-        <input type="number" id="your_x" placeholder="Enter your X coordinate">
-        
-        <label for="your_y">Your Y Coordinate:</label>
-        <input type="number" id="your_y" placeholder="Enter your Y coordinate">
-        
-        <label for="your_elevation">Your Elevation (meters):</label>
-        <input type="number" id="your_elevation" placeholder="Enter your elevation">
-
-        <button onclick="calculateTargetDetails()">Calculate Target Details</button>
-        
-        <div class="result" id="targetResult"></div>
-    </div>
-</div>
+ 
 
 <!-- Scripts for Section 3 -->
 <script>
@@ -357,5 +383,76 @@ function calculateTargetDetails() {
     document.getElementById("distance").value = trueDistanceToTarget.toFixed(2);
 }
 </script>
+    <script>
+// Function to draw the map based on input coordinates
+function drawMap(observer, target, player) {
+    const canvas = document.getElementById('mapCanvas');
+    const ctx = canvas.getContext('2d');
+
+    // Clear the canvas
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    // Scale the coordinates to fit within the canvas
+    const scale = 0.1;  // Adjust this scale based on your coordinate system
+    const offsetX = canvas.width / 2;
+    const offsetY = canvas.height / 2;
+
+    // Draw the observer
+    ctx.fillStyle = 'cyan';
+    ctx.beginPath();
+    ctx.arc(observer.x * scale + offsetX, observer.y * scale + offsetY, 5, 0, 2 * Math.PI);
+    ctx.fill();
+    ctx.fillText('Observer', observer.x * scale + offsetX + 10, observer.y * scale + offsetY + 5);
+
+    // Draw the target
+    ctx.fillStyle = 'red';
+    ctx.beginPath();
+    ctx.arc(target.x * scale + offsetX, target.y * scale + offsetY, 5, 0, 2 * Math.PI);
+    ctx.fill();
+    ctx.fillText('Target', target.x * scale + offsetX + 10, target.y * scale + offsetY + 5);
+
+    // Draw the player
+    ctx.fillStyle = 'lime';
+    ctx.beginPath();
+    ctx.arc(player.x * scale + offsetX, player.y * scale + offsetY, 5, 0, 2 * Math.PI);
+    ctx.fill();
+    ctx.fillText('Player', player.x * scale + offsetX + 10, player.y * scale + offsetY + 5);
+
+    // Draw lines between observer and target, and player and target
+    ctx.strokeStyle = '#00ff00';
+    ctx.lineWidth = 2;
+    
+    // Line from observer to target
+    ctx.beginPath();
+    ctx.moveTo(observer.x * scale + offsetX, observer.y * scale + offsetY);
+    ctx.lineTo(target.x * scale + offsetX, target.y * scale + offsetY);
+    ctx.stroke();
+
+    // Line from player to target
+    ctx.beginPath();
+    ctx.moveTo(player.x * scale + offsetX, player.y * scale + offsetY);
+    ctx.lineTo(target.x * scale + offsetX, target.y * scale + offsetY);
+    ctx.stroke();
+}
+
+// Function to calculate target details and then draw the map
+function calculateTargetDetails() {
+    const observerX = parseFloat(document.getElementById("observer_x").value);
+    const observerY = parseFloat(document.getElementById("observer_y").value);
+    const targetX = parseFloat(document.getElementById("target_x").value);
+    const targetY = parseFloat(document.getElementById("target_y").value);
+    const playerX = parseFloat(document.getElementById("your_x").value);
+    const playerY = parseFloat(document.getElementById("your_y").value);
+
+    const observer = { x: observerX, y: observerY };
+    const target = { x: targetX, y: targetY };
+    const player = { x: playerX, y: playerY };
+
+    drawMap(observer, target, player);
+}
+</script>
+</body>
+</html>
+
 </body>
 </html>
