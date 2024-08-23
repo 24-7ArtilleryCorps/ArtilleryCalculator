@@ -269,11 +269,17 @@ function calculateTargetDetails() {
     // Display some results (optional)
     const resultDiv = document.getElementById('targetResult');
     const distanceToTarget = Math.sqrt(Math.pow(targetX - playerX, 2) + Math.pow(targetY - playerY, 2));
-    const bearingToTarget = Math.atan2(targetY - playerY, targetX - playerX) * (180 / Math.PI);
+    let bearingToTarget = Math.atan2(targetY - playerY, targetX - playerX) * (180 / Math.PI);
+
+    // Adjust the bearing to be in the range 0° to 360°
+    if (bearingToTarget < 0) {
+        bearingToTarget += 360;
+    }
 
     resultDiv.innerHTML = `<p>Distance to Target: ${distanceToTarget.toFixed(2)} meters</p>`;
     resultDiv.innerHTML += `<p>Bearing to Target: ${bearingToTarget.toFixed(2)}°</p>`;
 }
+
 </script>
 </body>
 </html>
