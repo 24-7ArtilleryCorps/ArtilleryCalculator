@@ -129,7 +129,7 @@
 
 <div class="container">
     <h1>24/7 Conflict Ops-Artillery Elevation Calculator</h1>
-   <a href="https://discord.com/grkfgh3EAh" rel="external">https://discord.com/grkfgh3EAh</a>
+   <a href="https://discord.gg/grkfgh3EAh" rel="external">https://discord.gg/grkfgh3EAh</a>
 
     <!-- Section 1: Calculate Barrel Elevation Based on Distance -->
     <div class="section">
@@ -223,6 +223,7 @@ let scale = 1;
 let translatePos = { x: 0, y: 0 };
 let isDragging = false;
 let dragStart = { x: 0, y: 0 };
+let observer, target, player; // Declare globally so they can be accessed by multiple functions
 let tooltip = document.getElementById('tooltip');
 
 // Function to calculate scaling factor for the map based on coordinates
@@ -345,9 +346,9 @@ function calculateTargetDetails() {
         return;
     }
 
-    const observer = { x: observerX, y: observerY };
-    const target = { x: targetX, y: targetY };
-    const player = { x: playerX, y: playerY };
+    observer = { x: observerX, y: observerY }; // Assign global variables
+    target = { x: targetX, y: targetY };
+    player = { x: playerX, y: playerY };
 
     // Call the function to draw the map
     drawMap(observer, target, player);
@@ -391,15 +392,8 @@ document.getElementById('mapCanvas').addEventListener('mousemove', (event) => {
         translatePos.y = event.clientY - dragStart.y;
         calculateTargetDetails(); // Re-draw the map with the new position
     }
-});
 
-document.getElementById('mapCanvas').addEventListener('mouseup', () => {
-    isDragging = false;
-    document.getElementById('mapCanvas').style.cursor = 'grab';
-});
-
-// Function to show tooltip with coordinates on hover
-document.getElementById('mapCanvas').addEventListener('mousemove', (event) => {
+    // Tooltip functionality
     const canvas = document.getElementById('mapCanvas');
     const rect = canvas.getBoundingClientRect();
     const x = (event.clientX - rect.left - translatePos.x) / scale;
@@ -411,7 +405,7 @@ document.getElementById('mapCanvas').addEventListener('mousemove', (event) => {
     const elements = [
         { label: 'Observer', x: observer.x, y: observer.y },
         { label: 'Target', x: target.x, y: target.y },
-        { label: 'Player', x: player.x, y: player.y }
+               { label: 'Player', x: player.x, y: player.y }
     ];
 
     for (const element of elements) {
@@ -429,6 +423,23 @@ document.getElementById('mapCanvas').addEventListener('mousemove', (event) => {
         tooltip.style.opacity = 0;
     }
 });
+
+document.getElementById('mapCanvas').addEventListener('mouseup', () => {
+    isDragging = false;
+    document.getElementById('mapCanvas').style.cursor = 'grab';
+});
+
+// Function to export the map as an image
+function exportMap() {
+    const canvas = document.getElementById('mapCanvas');
+    const link = document.createElement('a');
+    link.href = canvas.toDataURL('image/png');
+    link.download = 'artillery_map.png';
+    link.click();
+}
 </script>
 </body>
 </html>
+
+
+
