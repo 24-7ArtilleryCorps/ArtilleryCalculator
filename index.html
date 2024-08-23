@@ -353,10 +353,8 @@ function calculateTargetDetails() {
     const true_distance_to_target = Math.sqrt(Math.pow(horizontal_distance_to_target, 2) + Math.pow(target_elevation - your_elevation, 2));
 
     // Calculate bearing from your position to the target
-    let bearing_to_target = Math.atan2(target_y - your_y, target_x - your_x) * (180 / Math.PI);
-    if (bearing_to_target < 0) {
-        bearing_to_target += 360;
-    }
+    let angle = Math.atan2(target_y - your_y, target_x - your_x) * (180 / Math.PI);
+    let bearing_to_target = (90 - angle + 360) % 360;
 
     // Display the results
     resultDiv.innerHTML = `<p>Target Coordinates: (${target_x.toFixed(2)}, ${target_y.toFixed(2)})</p>`;
@@ -367,7 +365,16 @@ function calculateTargetDetails() {
 
     // Automatically fill the distance in the barrel elevation section
     document.getElementById('distance').value = true_distance_to_target.toFixed(2);
+
+    // Update the global variables
+    observer = { x: observer_x, y: observer_y };
+    target = { x: target_x, y: target_y };
+    player = { x: your_x, y: your_y };
+
+    // Draw the map
+    drawMap(observer, target, player);
 }
+
 
 // Function to calculate scaling factor for the map based on coordinates
 function calculateScaleAndOffset(coordinates, canvasSize) {
