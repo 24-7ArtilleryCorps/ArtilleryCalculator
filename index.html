@@ -19,13 +19,13 @@
             border-radius: 8px;
             box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
         }
-        h1 {
+        h1, h2, h3 {
             text-align: center;
         }
         label {
             font-weight: bold;
         }
-        input[type="number"] {
+        input[type="number"], select {
             width: 100%;
             padding: 10px;
             margin: 10px 0;
@@ -56,22 +56,37 @@
         .section {
             margin-bottom: 40px;
         }
+        .error {
+            border-color: red;
+        }
     </style>
 </head>
 <body>
 
 <div class="container">
     <h1>Artillery Elevation Calculator</h1>
+
     <!-- Section 1: Calculate Barrel Elevation Based on Distance -->
     <div class="section">
         <h2>Calculate Barrel Elevation</h2>
         <label for="distance">Enter Distance (meters):</label>
         <input type="number" id="distance" placeholder="Enter distance in meters">
+
+        <label for="muzzleVelocity">Muzzle Velocity (m/s):</label>
+        <input type="number" id="muzzleVelocity" value="199.34" required>
+
+        <label for="fireMode">Fire Mode:</label>
+        <select id="fireMode">
+            <option value="direct">Direct Fire</option>
+            <option value="indirect">Indirect Fire</option>
+        </select>
+
         <button onclick="calculateElevation()">Calculate Elevation</button>
         
         <div class="result" id="result"></div>
     </div>
-	  <!-- Section 2: True Distance Calculation -->
+
+    <!-- Section 2: Calculate True Distance with Elevation Difference -->
     <div class="section">
         <h2>Calculate True Distance with Elevation Difference</h2>
         <label for="horizontalDistance">Enter Horizontal Distance (meters):</label>
@@ -84,7 +99,152 @@
         
         <div class="result" id="trueDistanceResult"></div>
     </div>
-<!-- Combined Section: Calculate Target Details with Elevation -->
+
+    <!-- Section 3: Calculate Target Details with Elevation -->
+    <div class="section">
+        <h2>Calculate Target Details with Elevation</h2>
+        
+        <!-- Observer Details -->
+        <h3>Observer Details (Optional)</h3>
+        <label for="observer_x">Observer X Coordinate:</label>
+        <input type="number" id="observer_x" placeholder="Enter observer X coordinate">
+        
+        <label for="observer_y">Observer Y Coordinate:</label>
+        <input type="number" id="observer_y" placeholder="Enter observer Y coordinate">
+        
+        <label for="observer_bearing">Bearing from Observer (degrees):</label>
+        <input type="number" id="observer_bearing" placeholder="Enter bearing from observer">
+        
+        <label for="observer_distance">Distance from Observer (meters):</label>
+        <input type="number" id="observer_distance" placeholder="Enter distance from observer">
+        
+        <label for="observer_elevation">Observer Elevation (meters):</label>
+        <input type="number" id="observer_elevation" placeholder="Enter observer elevation">
+
+        <label for="elevation_difference">Elevation Difference to Target (meters):</label>
+        <input type="number" id="elevation_difference" placeholder="Enter elevation difference from observer to target">
+
+        <!-- Target Coordinates -->
+        <h3>Target Coordinates (If Known)</h3>
+        <label for="target_x">Target X Coordinate:</label>
+        <input type="number" id="target_x" placeholder="Enter target X coordinate">
+        
+        <label for="target_y">Target Y Coordinate:</label>
+        <input type="number" id="target_y" placeholder="Enter target Y coordinate">
+
+        <label for="target_elevation">Target Elevation (meters):</label>
+        <input type="number" id="target_elevation" placeholder="Enter target elevation">
+
+        <!-- Your Coordinates -->
+        <h3>Your Coordinates</h3>
+        <label for="your_x">Your X Coordinate:</label>
+        <input type="number" id="your_x" placeholder="Enter your X coordinate">
+        
+        <label for="your_y">Your Y Coordinate:</label>
+        <input type="number" id="your_y" placeholder="Enter your Y coordinate">
+        
+        <label for="your_elevation">Your Elevation (meters):</label>
+        <input type="number" id="your_elevation" placeholder="Enter your elevation">
+
+        <button onclick="calculateTargetDetails()">Calculate Target Details</button>
+        
+        <div class="result" id="targetResult"></div>
+    </div>
+</div>
+<script>
+// Function to validate input and calculate barrel elevation based on distance and fire mode
+function calculateElevation() {
+    const distanceInput = document.getElementById("distance");
+    const muzzleVelocityInput = document.getElementById("muzzleVelocity");
+    const fireMode = document.getElementById("fireMode").value;
+    const resultDiv = document.getElementById("result");
+
+    // Clear previous results and error messages
+    resultDiv.innerHTML = "";
+    distanceInput.classList.remove("error");
+    muzzleVelocityInput.classList.remove("error");
+
+    const distance = parseFloat(distanceInput.value);
+    const muzzleVelocity = parseFloat(muzzleVelocityInput.value);
+
+    // Input validation
+    if (isNaN(distance) || distance <= 0) {
+        distanceInput.classList.add("error");
+        resultDiv.innerHTML = "<p>Please enter a valid distance greater than 0.</p>";
+        return;
+    }
+
+    if (isNaN(muzzleVelocity) || muzzleVelocity <= 0) {
+        muzzleVelocityInput.classList.add("error");
+        resultDiv.innerHTML = "<p>Please enter a valid muzzle velocity greater than 0.</p>";
+        return;
+    }
+
+    const g = 9.81; // Gravity in m/s^2
+
+    // Calculate direct fire angle in radians
+    let directAngleRad = Math.asin((distance * g) / (muzzleVelocity ** 2)) / 2;
+
+    // Convert to degrees
+    let directAngleDeg = directAngleRad * (180 / Math.PI);
+
+    // Convert to mils
+    let directAngleMil = directAngleDeg / 0.05625;
+
+    let elevationMil;
+
+    // If indirect fire is selected, calculate the indirect angle
+    if (fireMode === 'indirect') {
+        let indirectAngleDeg = 90 - directAngleDeg;
+        let indirectAngleMil = indirectAngleDeg / 0.05625;
+
+        // Cap the indirect fire at the turret's maximum elevation of 1309 mils
+        elevationMil = indirectAngleMil > 1309 ? 1309 : indirectAngleMil;
+    } else {
+        elevationMil = directAngleMil;
+    }
+
+    // Display the result
+    resultDiv.innerHTML = `<p>Elevation: ${elevationMil.toFixed(2)} mils</p>`;
+}
+</script>
+<script>
+// Function to validate input, calculate true distance with elevation difference, and feed it to Section 1
+function calculateTrueDistance() {
+    const horizontalDistanceInput = document.getElementById("horizontalDistance");
+    const elevationDifferenceInput = document.getElementById("elevationDifference");
+    const resultDiv = document.getElementById("trueDistanceResult");
+
+    // Clear previous results and error messages
+    resultDiv.innerHTML = "";
+    horizontalDistanceInput.classList.remove("error");
+    elevationDifferenceInput.classList.remove("error");
+
+    const horizontalDistance = parseFloat(horizontalDistanceInput.value);
+    const elevationDifference = parseFloat(elevationDifferenceInput.value);
+
+    // Input validation
+    if (isNaN(horizontalDistance) || horizontalDistance <= 0) {
+        horizontalDistanceInput.classList.add("error");
+        resultDiv.innerHTML = "<p>Please enter a valid horizontal distance greater than 0.</p>";
+        return;
+    }
+
+    if (isNaN(elevationDifference)) {
+        elevationDifferenceInput.classList.add("error");
+        resultDiv.innerHTML = "<p>Please enter a valid elevation difference.</p>";
+        return;
+    }
+
+    // Calculate true distance using Pythagorean theorem
+    const trueDistance = Math.sqrt(Math.pow(horizontalDistance, 2) + Math.pow(elevationDifference, 2));
+    resultDiv.innerHTML = `<p>True Distance: ${trueDistance.toFixed(2)} meters</p>`;
+
+    // Automatically feed true distance to Section 1
+    document.getElementById("distance").value = trueDistance.toFixed(2);
+}
+</script>
+<!-- Section 3: Calculate Target Details with Elevation -->
 <div class="section">
     <h2>Calculate Target Details with Elevation</h2>
     
@@ -134,259 +294,116 @@
     
     <div class="result" id="targetResult"></div>
 </div>
+
 <script>
-// Empty lookup table to be filled in
-const lookupTable = [
-  	{ elevation: -89, distance: 17, fireType: "Direct" },
-	{ elevation: -80, distance: 19, fireType: "Direct" },
-	{ elevation: -70, distance: 22, fireType: "Direct" },
-	{ elevation: -60, distance: 26, fireType: "Direct" },
-  	{elevation: -50, distance: 31, fireType: "Direct" },
-	{ elevation: -40, distance: 36, fireType: "Direct" },
-	{ elevation: -30, distance: 44, fireType: "Direct" },
-	{ elevation: -20, distance: 57, fireType: "Direct" },
-	{ elevation: -10, distance: 77, fireType: "Direct" },
-	{ elevation: 0, distance: 110, fireType: "Direct" },
-    { elevation: 10, distance: 155, fireType: "Direct" },
-    { elevation: 20, distance: 217, fireType: "Direct" },
-    { elevation: 30, distance: 282, fireType: "Direct" },
-    { elevation: 40, distance: 355, fireType: "Direct" },
-    { elevation: 50, distance: 432, fireType: "Direct" },
-    { elevation: 60, distance: 511, fireType: "Direct" },
-    { elevation: 70, distance: 582, fireType: "Direct" },
-    { elevation: 80, distance: 660, fireType: "Direct" },
-    { elevation: 90, distance: 732, fireType: "Direct" },
-    { elevation: 100, distance: 804, fireType: "Direct" },
-    { elevation: 110, distance: 881, fireType: "Direct" },
-    { elevation: 120, distance: 952, fireType: "Direct" },
-    { elevation: 130, distance: 1015, fireType: "Direct" },
-    { elevation: 140, distance: 1082, fireType: "Direct" },
-    { elevation: 150, distance: 1143, fireType: "Direct" },
-    { elevation: 160, distance: 1216, fireType: "Direct" },
-    { elevation: 170, distance: 1271, fireType: "Direct" },
-    { elevation: 180, distance: 1339, fireType: "Direct" },
-    { elevation: 190, distance: 1392, fireType: "Direct" },
-    { elevation: 200, distance: 1459, fireType: "Direct" },
-    { elevation: 210, distance: 1526, fireType: "Direct" },
-    { elevation: 220, distance: 1575, fireType: "Direct" },
-    { elevation: 230, distance: 1619, fireType: "Direct" },
-    { elevation: 240, distance: 1664, fireType: "Direct" },
-    { elevation: 250, distance: 1723, fireType: "Direct" },
-    { elevation: 260, distance: 1770, fireType: "Direct" },
-    { elevation: 270, distance: 1834, fireType: "Direct" },
-    { elevation: 280, distance: 1876, fireType: "Direct" },
-    { elevation: 290, distance: 1912, fireType: "Direct" },
-    { elevation: 300, distance: 1954, fireType: "Direct" },
-    { elevation: 310, distance: 2009, fireType: "Direct" },
-    { elevation: 320, distance: 2271, fireType: "Direct" },
-    { elevation: 330, distance: 2097, fireType: "Direct" },
-    { elevation: 340, distance: 2128, fireType: "Direct" },
-    { elevation: 350, distance: 2167, fireType: "Direct" },
-    { elevation: 360, distance: 2212, fireType: "Direct" },
-    { elevation: 370, distance: 2252, fireType: "Direct" },
-    { elevation: 380, distance: 2287, fireType: "Direct" },
-    { elevation: 390, distance: 2324, fireType: "Direct" },
-    { elevation: 400, distance: 2366, fireType: "Direct" },
-    { elevation: 410, distance: 2339, fireType: "Direct" },
-    { elevation: 420, distance: 2415, fireType: "Direct" },
-    { elevation: 430, distance: 2451, fireType: "Direct" },
-    { elevation: 440, distance: 2483, fireType: "Direct" },
-    { elevation: 450, distance: 2497, fireType: "Direct" },
-    { elevation: 460, distance: 2535, fireType: "Direct" },
-    { elevation: 470, distance: 2559, fireType: "Direct" },
-    { elevation: 480, distance: 2579, fireType: "Direct" },
-    { elevation: 490, distance: 2612, fireType: "Direct" },
-    { elevation: 500, distance: 2635, fireType: "Direct" },
-    { elevation: 510, distance: 2652, fireType: "Direct" },
-    { elevation: 520, distance: 2684, fireType: "Direct" },
-    { elevation: 530, distance: 2693, fireType: "Direct" },
-    { elevation: 540, distance: 2728, fireType: "Direct" },
-    { elevation: 550, distance: 2727, fireType: "Direct" },
-    { elevation: 560, distance: 2756, fireType: "Direct" },
-    { elevation: 570, distance: 2762, fireType: "Indirect" },
-    { elevation: 580, distance: 2778, fireType: "Indirect" },
-    { elevation: 590, distance: 2796, fireType: "Indirect" },
-    { elevation: 600, distance: 2800, fireType: "Indirect" },
-    { elevation: 620, distance: 2828, fireType: "Indirect" },
-    { elevation: 640, distance: 2845, fireType: "Indirect" },
-    { elevation: 660, distance: 2855, fireType: "Indirect" },
-    { elevation: 680, distance: 2867, fireType: "Indirect" },
-    { elevation: 700, distance: 2870, fireType: "Indirect" },
-    { elevation: 720, distance: 2885, fireType: "Indirect" },
-    { elevation: 740, distance: 2866, fireType: "Indirect" },
-    { elevation: 760, distance: 2871, fireType: "Indirect" },
-    { elevation: 780, distance: 2874, fireType: "Indirect" },
-    { elevation: 800, distance: 2848, fireType: "Indirect" },
-    { elevation: 820, distance: 2845, fireType: "Indirect" },
-    { elevation: 840, distance: 2815, fireType: "Indirect" },
-    { elevation: 860, distance: 2804, fireType: "Indirect" },
-    { elevation: 880, distance: 2752, fireType: "Indirect" },
-    { elevation: 900, distance: 2745, fireType: "Indirect" },
-     { elevation: 920, distance: 2707, fireType: "Indirect" },
-    { elevation: 940, distance: 2674, fireType: "Indirect" },
-    { elevation: 960, distance: 2639, fireType: "Indirect" },
-    { elevation: 980, distance: 2586, fireType: "Indirect" },
-    { elevation: 1000, distance: 2551, fireType: "Indirect" },
-    { elevation: 1030, distance: 2479, fireType: "Indirect" },
-    { elevation: 1060, distance: 2384, fireType: "Indirect" },
-    { elevation: 1090, distance: 2291, fireType: "Indirect" },
-    { elevation: 1120, distance: 2188, fireType: "Indirect" },
-    { elevation: 1150, distance: 2091, fireType: "Indirect" },
-    { elevation: 1170, distance: 2010, fireType: "Indirect" },
-    { elevation: 1190, distance: 1936, fireType: "Indirect" },
-    { elevation: 1210, distance: 1867, fireType: "Indirect" },
-    { elevation: 1230, distance: 1780, fireType: "Indirect" },
-    { elevation: 1250, distance: 1691, fireType: "Indirect" },
-    { elevation: 1270, distance: 1600, fireType: "Indirect" },
-    { elevation: 1290, distance: 1505, fireType: "Indirect" },
-    { elevation: 1308, distance: 1430, fireType: "Indirect" }
-];
-
-// Function to calculate barrel elevation based on distance
-function calculateElevation() {
-    const distanceInput = document.getElementById("distance").value;
-    const distance = parseFloat(distanceInput);
-    const resultDiv = document.getElementById("result");
-
-    // Clear previous results
-    resultDiv.innerHTML = "";
-
-    if (isNaN(distance)) {
-        resultDiv.innerHTML = "<p>Please enter a valid distance.</p>";
-        return;
-    }
-
-    // Separate lookup table into direct and indirect fire types
-    const directFireTable = lookupTable.filter(entry => entry.fireType === "Direct");
-    const indirectFireTable = lookupTable.filter(entry => entry.fireType === "Indirect");
-
-    // Sort both tables by distance for proper interpolation
-    directFireTable.sort((a, b) => a.distance - b.distance);
-    indirectFireTable.sort((a, b) => a.distance - b.distance);
-
-    // Function to perform interpolation
-    function interpolateFire(table) {
-        let lower, upper;
-        for (let i = 0; i < table.length - 1; i++) {
-            if (table[i].distance <= distance && table[i + 1].distance >= distance) {
-                lower = table[i];
-                upper = table[i + 1];
-                break;
-            }
-        }
-        if (lower && upper) {
-            return lower.elevation + ((distance - lower.distance) * (upper.elevation - lower.elevation) / (upper.distance - lower.distance));
-        }
-        return null;
-    }
-
-    // Calculate interpolated elevation for direct fire
-    const directMatch = directFireTable.find(entry => entry.distance === distance);
-    const directElevation = directMatch ? directMatch.elevation : interpolateFire(directFireTable);
-
-    // Calculate interpolated elevation for indirect fire
-    const indirectMatch = indirectFireTable.find(entry => entry.distance === distance);
-    const indirectElevation = indirectMatch ? indirectMatch.elevation : interpolateFire(indirectFireTable);
-
-    // Display results
-    if (directElevation !== null) {
-        resultDiv.innerHTML += `<p>Direct Fire Elevation: ${directElevation.toFixed(2)} mils</p>`;
-    }
-    if (indirectElevation !== null) {
-        resultDiv.innerHTML += `<p>Indirect Fire Elevation: ${indirectElevation.toFixed(2)} mils</p>`;
-    }
-    if (directElevation === null && indirectElevation === null) {
-        resultDiv.innerHTML = "<p>No matching or interpolatable elevation found for this distance.</p>";
-    }
-}
-
-// Function to calculate true distance with elevation difference
-function calculateTrueDistance() {
-    const horizontalDistance = parseFloat(document.getElementById("horizontalDistance").value);
-    const elevationDifference = parseFloat(document.getElementById("elevationDifference").value);
-    const resultDiv = document.getElementById("trueDistanceResult");
-
-    // Clear previous results
-    resultDiv.innerHTML = "";
-
-    if (isNaN(horizontalDistance) || isNaN(elevationDifference)) {
-        resultDiv.innerHTML = "<p>Please enter valid values for both distance and elevation difference.</p>";
-        return;
-    }
-
-    // Calculate true distance using Pythagorean theorem
-    const trueDistance = Math.sqrt(Math.pow(horizontalDistance, 2) + Math.pow(elevationDifference, 2));
-    resultDiv.innerHTML = `<p>True Distance: ${trueDistance.toFixed(2)} meters</p>`;
-}
+// Function to validate input, calculate target details based on observer and target coordinates, and feed it to Section 1
 function calculateTargetDetails() {
-    const observer_x = parseFloat(document.getElementById("observer_x").value);
-    const observer_y = parseFloat(document.getElementById("observer_y").value);
-    const observer_bearing = parseFloat(document.getElementById("observer_bearing").value);
-    const observer_distance = parseFloat(document.getElementById("observer_distance").value);
-    const observer_elevation = parseFloat(document.getElementById("observer_elevation").value);
-    const elevation_difference = parseFloat(document.getElementById("elevation_difference").value);
+    const observerXInput = document.getElementById("observer_x");
+    const observerYInput = document.getElementById("observer_y");
+    const observerBearingInput = document.getElementById("observer_bearing");
+    const observerDistanceInput = document.getElementById("observer_distance");
+    const observerElevationInput = document.getElementById("observer_elevation");
+    const elevationDifferenceInput = document.getElementById("elevation_difference");
 
-    let target_x = parseFloat(document.getElementById("target_x").value);
-    let target_y = parseFloat(document.getElementById("target_y").value);
-    let target_elevation = parseFloat(document.getElementById("target_elevation").value);
+    const targetXInput = document.getElementById("target_x");
+    const targetYInput = document.getElementById("target_y");
+    const targetElevationInput = document.getElementById("target_elevation");
 
-    const your_x = parseFloat(document.getElementById("your_x").value);
-    const your_y = parseFloat(document.getElementById("your_y").value);
-    const your_elevation = parseFloat(document.getElementById("your_elevation").value);
-    
+    const yourXInput = document.getElementById("your_x");
+    const yourYInput = document.getElementById("your_y");
+    const yourElevationInput = document.getElementById("your_elevation");
+
     const resultDiv = document.getElementById("targetResult");
 
-    // Clear previous results
+    // Clear previous results and error messages
     resultDiv.innerHTML = "";
+    observerXInput.classList.remove("error");
+    observerYInput.classList.remove("error");
+    observerBearingInput.classList.remove("error");
+    observerDistanceInput.classList.remove("error");
+    observerElevationInput.classList.remove("error");
+    elevationDifferenceInput.classList.remove("error");
+    targetXInput.classList.remove("error");
+    targetYInput.classList.remove("error");
+    targetElevationInput.classList.remove("error");
+    yourXInput.classList.remove("error");
+    yourYInput.classList.remove("error");
+    yourElevationInput.classList.remove("error");
 
-    if (isNaN(your_x) || isNaN(your_y) || isNaN(your_elevation)) {
+    const yourX = parseFloat(yourXInput.value);
+    const yourY = parseFloat(yourYInput.value);
+    const yourElevation = parseFloat(yourElevationInput.value);
+
+    // Input validation for your coordinates and elevation
+    if (isNaN(yourX) || isNaN(yourY) || isNaN(yourElevation)) {
+        yourXInput.classList.add("error");
+        yourYInput.classList.add("error");
+        yourElevationInput.classList.add("error");
         resultDiv.innerHTML = "<p>Please enter valid values for your coordinates and elevation.</p>";
         return;
     }
 
-    // If target coordinates are not entered, calculate them using observer details
-    if (isNaN(target_x) || isNaN(target_y)) {
-        if (isNaN(observer_x) || isNaN(observer_y) || isNaN(observer_bearing) || isNaN(observer_distance)) {
+    let targetX = parseFloat(targetXInput.value);
+    let targetY = parseFloat(targetYInput.value);
+    let targetElevation = parseFloat(targetElevationInput.value);
+
+    if (isNaN(targetX) || isNaN(targetY)) {
+        // If target coordinates are not entered, calculate them using observer details
+        const observerX = parseFloat(observerXInput.value);
+        const observerY = parseFloat(observerYInput.value);
+        const observerBearing = parseFloat(observerBearingInput.value);
+        const observerDistance = parseFloat(observerDistanceInput.value);
+
+        // Input validation for observer details
+        if (isNaN(observerX) || isNaN(observerY) || isNaN(observerBearing) || isNaN(observerDistance)) {
+            observerXInput.classList.add("error");
+            observerYInput.classList.add("error");
+            observerBearingInput.classList.add("error");
+            observerDistanceInput.classList.add("error");
             resultDiv.innerHTML = "<p>Please enter valid observer details or target coordinates.</p>";
             return;
         }
 
         // Convert bearing to radians
-        const bearing_rad = observer_bearing * (Math.PI / 180);
+        const bearingRad = observerBearing * (Math.PI / 180);
 
         // Calculate target coordinates
-        target_x = observer_x + observer_distance * Math.cos(bearing_rad);
-        target_y = observer_y + observer_distance * Math.sin(bearing_rad);
+        targetX = observerX + observerDistance * Math.cos(bearingRad);
+        targetY = observerY + observerDistance * Math.sin(bearingRad);
     }
 
-    // If target elevation is not entered, calculate it using observer elevation and elevation difference
-    if (isNaN(target_elevation)) {
-        if (isNaN(observer_elevation) || isNaN(elevation_difference)) {
+    if (isNaN(targetElevation)) {
+        // If target elevation is not entered, calculate it using observer elevation and elevation difference
+        const observerElevation = parseFloat(observerElevationInput.value);
+        const elevationDifference = parseFloat(elevationDifferenceInput.value);
+
+        if (isNaN(observerElevation) || isNaN(elevationDifference)) {
+            observerElevationInput.classList.add("error");
+            elevationDifferenceInput.classList.add("error");
             resultDiv.innerHTML = "<p>Please enter valid observer elevation and elevation difference.</p>";
             return;
         }
-        target_elevation = observer_elevation + elevation_difference;
+        targetElevation = observerElevation + elevationDifference;
     }
 
     // Calculate distance from your position to the target
-    const horizontal_distance_to_target = Math.sqrt(Math.pow(target_x - your_x, 2) + Math.pow(target_y - your_y, 2));
-    const true_distance_to_target = Math.sqrt(Math.pow(horizontal_distance_to_target, 2) + Math.pow(target_elevation - your_elevation, 2));
+    const horizontalDistanceToTarget = Math.sqrt(Math.pow(targetX - yourX, 2) + Math.pow(targetY - yourY, 2));
+    const trueDistanceToTarget = Math.sqrt(Math.pow(horizontalDistanceToTarget, 2) + Math.pow(targetElevation - yourElevation, 2));
 
     // Calculate bearing from your position to the target
-    let bearing_to_target = Math.atan2(target_y - your_y, target_x - your_x) * (180 / Math.PI);
-    if (bearing_to_target < 0) {
-        bearing_to_target += 360;
+    let bearingToTarget = Math.atan2(targetY - yourY, targetX - yourX) * (180 / Math.PI);
+    if (bearingToTarget < 0) {
+        bearingToTarget += 360;
     }
 
     // Display the results
-    resultDiv.innerHTML = `<p>Target Coordinates: (${target_x.toFixed(2)}, ${target_y.toFixed(2)})</p>`;
-    resultDiv.innerHTML += `<p>Target Elevation: ${target_elevation.toFixed(2)} meters</p>`;
-    resultDiv.innerHTML += `<p>Horizontal Distance from Your Position to Target: ${horizontal_distance_to_target.toFixed(2)} meters</p>`;
-    resultDiv.innerHTML += `<p>True Distance from Your Position to Target: ${true_distance_to_target.toFixed(2)} meters</p>`;
-    resultDiv.innerHTML += `<p>Bearing from Your Position to Target: ${bearing_to_target.toFixed(2)}°</p>`;
+    resultDiv.innerHTML = `<p>Target Coordinates: (${targetX.toFixed(2)}, ${targetY.toFixed(2)})</p>`;
+    resultDiv.innerHTML += `<p>Target Elevation: ${targetElevation.toFixed(2)} meters</p>`;
+    resultDiv.innerHTML += `<p>Horizontal Distance from Your Position to Target: ${horizontalDistanceToTarget.toFixed(2)} meters</p>`;
+    resultDiv.innerHTML += `<p>True Distance from Your Position to Target: ${trueDistanceToTarget.toFixed(2)} meters</p>`;
+    resultDiv.innerHTML += `<p>Bearing from Your Position to Target: ${bearingToTarget.toFixed(2)}°</p>`;
+
+    // Automatically feed true distance to Section 1
+    document.getElementById("distance").value = trueDistanceToTarget.toFixed(2);
 }
 </script>
-</body>
-</html>
-
-
