@@ -270,17 +270,27 @@ function calculateElevation() {
     let directAngleMil = directAngleDeg / 0.05625;
 
     let elevationMil;
+    let timeOfFlight;
 
     // If indirect fire is selected, calculate the indirect angle
     if (fireMode === 'indirect') {
         let indirectAngleDeg = 90 - directAngleDeg;
         let indirectAngleMil = indirectAngleDeg / 0.05625;
         elevationMil = indirectAngleMil > 1309 ? 1309 : indirectAngleMil;
+
+        // Time of flight for indirect fire
+        timeOfFlight = distance / (muzzleVelocity * Math.cos(indirectAngleDeg * (Math.PI / 180)));
     } else {
         elevationMil = directAngleMil > 1309 ? 1309 : directAngleMil;
+
+        // Time of flight for direct fire
+        timeOfFlight = distance / (muzzleVelocity * Math.cos(directAngleDeg * (Math.PI / 180)));
     }
 
-    document.getElementById('result').innerHTML = `<p>Elevation: ${elevationMil.toFixed(2)} mils</p>`;
+    document.getElementById('result').innerHTML = `
+        <p>Elevation: ${elevationMil.toFixed(2)} mils</p>
+        <p>Time of Flight: ${timeOfFlight.toFixed(2)} seconds</p>
+    `;
 }
 
 // Function to calculate target details and then draw the map
