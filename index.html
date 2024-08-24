@@ -240,41 +240,27 @@ function calculateElevation() {
     const distance = parseFloat(document.getElementById("distance").value);
     const initialVelocity = 185.72; // Updated muzzle velocity
     const g = 9.81; // Gravity in m/s²
-    const timeStep = 0.01; // Small time step for the simulation in seconds
 
     if (isNaN(distance) || distance <= 0) {
         document.getElementById('result').innerHTML = "<p class='error'>Please enter a valid distance.</p>";
         return;
     }
 
-    let velocity = initialVelocity;
-    let position = 0;
-    let elevationAngleRad = 0.01; // Small initial angle in radians
-    let timeOfFlight = 0;
+    // Calculate the required elevation angle in radians using the ballistic equation
+    const sin_2theta = (g * distance) / (initialVelocity ** 2);
+    let elevationMil;
 
-    // Iterate to simulate the projectile's travel
-    while (position < distance) {
-        // Update the position based on the current velocity and elevation angle
-        position += velocity * Math.cos(elevationAngleRad) * timeStep;
-
-        // Increment the time of flight
-        timeOfFlight += timeStep;
-
-        // Adjust the elevation angle if needed to correct the trajectory
-        elevationAngleRad += 0.00001; // Small increment for accuracy
+    if (Math.abs(sin_2theta) <= 1) {
+        const elevationAngleRad = 0.5 * Math.asin(sin_2theta);
+        const elevationAngleDeg = elevationAngleRad * (180 / Math.PI);
+        elevationMil = elevationAngleDeg / 0.05625; // Convert degrees to mils
+    } else {
+        elevationMil = "Out of range"; // If the calculation goes out of the possible range for arcsin
     }
-
-    // Convert the final elevation angle to degrees and then to mils
-    let elevationAngleDeg = elevationAngleRad * (180 / Math.PI);
-    let elevationMil = elevationAngleDeg / 0.05625;
-
-    // Clip to maximum elevation mils if necessary
-    elevationMil = Math.min(elevationMil, 1309);
 
     // Display the results
     document.getElementById('result').innerHTML = `
         <p>Elevation: ${elevationMil.toFixed(2)} mils</p>
-        <p>Time of Flight: ${timeOfFlight.toFixed(2)} seconds</p>
     `;
 }
 
