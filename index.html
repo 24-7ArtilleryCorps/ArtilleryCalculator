@@ -150,7 +150,7 @@
     <h1>Artillery Elevation Calculator</h1>
 
     <!-- Server Image -->
-    <img src="Logo maker project.png" alt="Server Logo" class="server-image">
+    <img src="/mnt/data/Logo maker project.png" alt="Server Logo" class="server-image">
 
     <!-- Discord Link -->
     <a href="https://discord.gg/grkfgh3EAh" class="discord-link" target="_blank">Join our Discord: https://discord.gg/grkfgh3EAh</a>
@@ -293,15 +293,15 @@ function calculateElevation() {
 }
 // Function to calculate target details and then draw the map
 function calculateTargetDetails() {
-    const observerEasting = parseFloat(document.getElementById("observer_x").value) || 0;
-    const observerNorthing = parseFloat(document.getElementById("observer_y").value) || 0;
+    let observerEasting = parseFloat(document.getElementById("observer_x").value) || 0;
+    let observerNorthing = parseFloat(document.getElementById("observer_y").value) || 0;
     const observerBearing = parseFloat(document.getElementById("observer_bearing").value) || 0;
     const observerDistance = parseFloat(document.getElementById("observer_distance").value) || 0;
     const observerElevation = parseFloat(document.getElementById("observer_elevation").value) || 0;
     const elevationDifference = parseFloat(document.getElementById("elevation_difference").value) || 0;
 
-    const yourEasting = parseFloat(document.getElementById("your_x").value) || 0;
-    const yourNorthing = parseFloat(document.getElementById("your_y").value) || 0;
+    let yourEasting = parseFloat(document.getElementById("your_x").value) || 0;
+    let yourNorthing = parseFloat(document.getElementById("your_y").value) || 0;
     const yourElevation = parseFloat(document.getElementById("your_elevation").value) || 0;
     
     const resultDiv = document.getElementById("targetResult");
@@ -314,6 +314,10 @@ function calculateTargetDetails() {
         resultDiv.innerHTML = "<p>Please enter valid values for your coordinates and elevation.</p>";
         return;
     }
+
+    // Swap Easting and Northing to ensure correct bearing calculation
+    [observerEasting, observerNorthing] = [observerNorthing, observerEasting];
+    [yourEasting, yourNorthing] = [yourNorthing, yourEasting];
 
     // Calculate target coordinates using observer details
     const bearing_rad = observerBearing * (Math.PI / 180);
@@ -346,10 +350,58 @@ function calculateTargetDetails() {
     target = { easting: targetEasting, northing: targetNorthing };
     player = { easting: yourEasting, northing: yourNorthing };
 
-    // Draw the map using the correct coordinates
+    // Draw the map
     drawMap(observer, target, player);
 }
 
+
+
+
+// Function to calculate scaling factor for the map based on coordinates
+function calculateScaleAndOffset(coordinates, canvasSize) {
+    const xValues = coordinates.map(coord => coord.x);
+    const yValues = coordinates.map(coord => coord.y);
+
+    const minX = Math.min(...xValues);
+    const maxX = Math.max(...xValues);
+    const minY = Math.min(...yValues);
+    const maxY = Math.max(...yValues);
+
+    const padding = 40; // Safe margin in pixels
+    const scaleX = (canvasSize.width - 2 * padding) / (maxX - minX); // Adjust scale to account for padding
+    const scaleY = (canvasSize.height - 2 * padding) / (maxY - minY); // Adjust scale to account for padding
+    const scale = Math.min(scaleX, scaleY);
+
+    const offsetX = padding - minX * scale;
+    const offsetY = padding - minY * scale;
+
+    return { scale, offsetX, offsetY };
+}
+
+// Function to draw grid on the canvas
+function drawGrid(ctx, canvasSize, scale, offsetX, offsetY) {
+    const gridSize = 50; // Adjust grid size as needed
+    ctx.strokeStyle = '#444'; // Grid color
+    ctx.lineWidth = 1;
+
+    // Draw vertical grid lines
+    for (let x = 0; x <= canvasSize.width; x += gridSize * scale) {
+        ctx.beginPath();
+        ctx.moveTo(x + offsetX % (gridSize * scale), 0);
+        ctx.lineTo(x + offsetX % (gridSize * scale), canvasSize.height);
+        ctx.stroke();
+    }
+
+    // Draw horizontal grid lines
+    for (let y = 0; y <= canvasSize.height; y += gridSize * scale) {
+        ctx.beginPath();
+        ctx.moveTo(0, y + offsetY % (gridSize * scale));
+        ctx.lineTo(canvasSize.width, y + offsetY % (gridSize * scale));
+        ctx.stroke();
+    }
+}
+
+// Function to draw the map based on input coordinates
 function drawMap(observer, target, player) {
     const canvas = document.getElementById('mapCanvas');
     const ctx = canvas.getContext('2d');
@@ -363,27 +415,26 @@ function drawMap(observer, target, player) {
 
     // Draw the grid
     drawGrid(ctx, canvasSize, scale, offsetX, offsetY);
-
-    // Draw the observer
+// Draw the observer
     ctx.fillStyle = 'cyan';
     ctx.beginPath();
-    ctx.arc(observer.easting * scale + offsetX, observer.northing * scale + offsetY, 5, 0, 2 * Math.PI);
+    ctx.arc(observer.x * scale + offsetX, observer.y * scale + offsetY, 5, 0, 2 * Math.PI);
     ctx.fill();
-    ctx.fillText('Observer', observer.easting * scale + offsetX + 10, observer.northing * scale + offsetY + 5);
+    ctx.fillText('Observer', observer.x * scale + offsetX + 10, observer.y * scale + offsetY + 5);
 
     // Draw the target
     ctx.fillStyle = 'red';
     ctx.beginPath();
-    ctx.arc(target.easting * scale + offsetX, target.northing * scale + offsetY, 5, 0, 2 * Math.PI);
+    ctx.arc(target.x * scale + offsetX, target.y * scale + offsetY, 5, 0, 2 * Math.PI);
     ctx.fill();
-    ctx.fillText('Target', target.easting * scale + offsetX + 10, target.northing * scale + offsetY + 5);
+    ctx.fillText('Target', target.x * scale + offsetX + 10, target.y * scale + offsetY + 5);
 
     // Draw the player
     ctx.fillStyle = 'lime';
     ctx.beginPath();
-    ctx.arc(player.easting * scale + offsetX, player.northing * scale + offsetY, 5, 0, 2 * Math.PI);
+    ctx.arc(player.x * scale + offsetX, player.y * scale + offsetY, 5, 0, 2 * Math.PI);
     ctx.fill();
-    ctx.fillText('Player', player.easting * scale + offsetX + 10, player.northing * scale + offsetY + 5);
+    ctx.fillText('Player', player.x * scale + offsetX + 10, player.y * scale + offsetY + 5);
 
     // Draw lines between observer and target, and player and target
     ctx.strokeStyle = '#00ff00';
@@ -391,23 +442,23 @@ function drawMap(observer, target, player) {
 
     // Line from observer to target
     ctx.beginPath();
-    ctx.moveTo(observer.easting * scale + offsetX, observer.northing * scale + offsetY);
-    ctx.lineTo(target.easting * scale + offsetX, target.northing * scale + offsetY);
+    ctx.moveTo(observer.x * scale + offsetX, observer.y * scale + offsetY);
+    ctx.lineTo(target.x * scale + offsetX, target.y * scale + offsetY);
     ctx.stroke();
 
     // Line from player to target
     ctx.beginPath();
-    ctx.moveTo(player.easting * scale + offsetX, player.northing * scale + offsetY);
-    ctx.lineTo(target.easting * scale + offsetX, target.northing * scale + offsetY);
+    ctx.moveTo(player.x * scale + offsetX, player.y * scale + offsetY);
+    ctx.lineTo(target.x * scale + offsetX, target.y * scale + offsetY);
     ctx.stroke();
 
     // Display distance between points
-    const distanceOT = Math.sqrt(Math.pow(target.easting - observer.easting, 2) + Math.pow(target.northing - observer.northing, 2));
-    const distancePT = Math.sqrt(Math.pow(target.easting - player.easting, 2) + Math.pow(target.northing - player.northing, 2));
+    const distanceOT = Math.sqrt(Math.pow(target.x - observer.x, 2) + Math.pow(target.y - observer.y, 2));
+    const distancePT = Math.sqrt(Math.pow(target.x - player.x, 2) + Math.pow(target.y - player.y, 2));
 
     ctx.fillStyle = '#ffffff';
-    ctx.fillText(`${distanceOT.toFixed(2)} units`, (observer.easting + target.easting) * scale / 2 + offsetX, (observer.northing + target.northing) * scale / 2 + offsetY);
-    ctx.fillText(`${distancePT.toFixed(2)} units`, (player.easting + target.easting) * scale / 2 + offsetX, (player.northing + target.northing) * scale / 2 + offsetY);
+    ctx.fillText(`${distanceOT.toFixed(2)} units`, (observer.x + target.x) * scale / 2 + offsetX, (observer.y + target.y) * scale / 2 + offsetY);
+    ctx.fillText(`${distancePT.toFixed(2)} units`, (player.x + target.x) * scale / 2 + offsetX, (player.y + target.y) * scale / 2 + offsetY);
 
     // Automatically fill the distance in the barrel elevation section
     document.getElementById('distance').value = distancePT.toFixed(2);
