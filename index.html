@@ -176,46 +176,40 @@
     </div>
 
     <!-- Section 2: Calculate Target Details with Elevation -->
-    <div class="section">
-        <h2>Calculate Target Details with Elevation</h2>
-        
-        <!-- Observer Details -->
-        <h3>Observer Details (Optional)</h3>
-        <label for="observer_x">Observer X Coordinate:</label>
-        <input type="number" id="observer_x" placeholder="Enter observer X coordinate" value="0">
-        
-        <label for="observer_y">Observer Y Coordinate:</label>
-        <input type="number" id="observer_y" placeholder="Enter observer Y coordinate" value="0">
-        
-        <label for="observer_bearing">Bearing from Observer (degrees):</label>
-        <input type="number" id="observer_bearing" placeholder="Enter bearing from observer" value="0">
-        
-        <label for="observer_distance">Distance from Observer (meters):</label>
-        <input type="number" id="observer_distance" placeholder="Enter distance from observer" value="0">
-        
-        <label for="observer_elevation">Observer Elevation (meters):</label>
-        <input type="number" id="observer_elevation" placeholder="Enter observer elevation" value="0">
-
-        <label for="elevation_difference">Elevation Difference to Target (meters):</label>
-        <input type="number" id="elevation_difference" placeholder="Enter elevation difference from observer to target" value="0">
-
+ <div class="section">
+    <h2>Calculate Target Details with Elevation</h2>
     
+    <!-- Observer Details -->
+    <h3>Observer Details (Optional)</h3>
+    
+    <label for="observer_mgrs">Observer MGRS Coordinate:</label>
+    <input type="text" id="observer_mgrs" placeholder="Enter observer MGRS coordinate">
 
-        <!-- Your Coordinates -->
-        <h3>Your Coordinates</h3>
-        <label for="your_x">Your X Coordinate:</label>
-        <input type="number" id="your_x" placeholder="Enter your X coordinate" value="0">
-        
-        <label for="your_y">Your Y Coordinate:</label>
-        <input type="number" id="your_y" placeholder="Enter your Y coordinate" value="0">
-        
-        <label for="your_elevation">Your Elevation (meters):</label>
-        <input type="number" id="your_elevation" placeholder="Enter your elevation" value="0">
+    <label for="observer_bearing">Bearing from Observer (degrees):</label>
+    <input type="number" id="observer_bearing" placeholder="Enter bearing from observer" value="0">
+    
+    <label for="observer_distance">Distance from Observer (meters):</label>
+    <input type="number" id="observer_distance" placeholder="Enter distance from observer" value="0">
+    
+    <label for="observer_elevation">Observer Elevation (meters):</label>
+    <input type="number" id="observer_elevation" placeholder="Enter observer elevation" value="0">
 
-        <button onclick="calculateTargetDetails()">Calculate Target Details</button>
-        
-        <div class="result" id="targetResult"></div>
-    </div>
+    <label for="elevation_difference">Elevation Difference to Target (meters):</label>
+    <input type="number" id="elevation_difference" placeholder="Enter elevation difference from observer to target" value="0">
+    
+    <!-- Your Coordinates -->
+    <h3>Your Coordinates</h3>
+    
+    <label for="your_mgrs">Your MGRS Coordinate:</label>
+    <input type="text" id="your_mgrs" placeholder="Enter your MGRS coordinate">
+
+    <label for="your_elevation">Your Elevation (meters):</label>
+    <input type="number" id="your_elevation" placeholder="Enter your elevation" value="0">
+
+    <button onclick="calculateTargetDetails()">Calculate Target Details</button>
+    
+    <div class="result" id="targetResult"></div>
+</div>
 
     <!-- Canvas for visualization -->
     <div style="position: relative;">
@@ -287,28 +281,30 @@ function calculateElevation() {
 }
 
 // Function to calculate target details and then draw the map
+<script src="https://cdn.jsdelivr.net/npm/mgrs@1.0.0/mgrs.js"></script>
+
+<script>
 function calculateTargetDetails() {
-    const observer_x = parseFloat(document.getElementById("observer_x").value) || 0;
-    const observer_y = parseFloat(document.getElementById("observer_y").value) || 0;
+    const observer_mgrs = document.getElementById("observer_mgrs").value;
+    const your_mgrs = document.getElementById("your_mgrs").value;
+
+    // Convert MGRS to UTM
+    const observer_utm = mgrs.toPoint(observer_mgrs);
+    const your_utm = mgrs.toPoint(your_mgrs);
+
+    // Extract UTM coordinates
+    const observer_x = observer_utm[0];
+    const observer_y = observer_utm[1];
+    const your_x = your_utm[0];
+    const your_y = your_utm[1];
+
+    // Get additional data
     const observer_bearing = parseFloat(document.getElementById("observer_bearing").value) || 0;
     const observer_distance = parseFloat(document.getElementById("observer_distance").value) || 0;
     const observer_elevation = parseFloat(document.getElementById("observer_elevation").value) || 0;
     const elevation_difference = parseFloat(document.getElementById("elevation_difference").value) || 0;
 
-    const your_x = parseFloat(document.getElementById("your_x").value) || 0;
-    const your_y = parseFloat(document.getElementById("your_y").value) || 0;
     const your_elevation = parseFloat(document.getElementById("your_elevation").value) || 0;
-    
-    const resultDiv = document.getElementById("targetResult");
-
-    // Clear previous results
-    resultDiv.innerHTML = "";
-
-    // Validate your coordinates and elevation
-    if (isNaN(your_x) || isNaN(your_y) || isNaN(your_elevation)) {
-        resultDiv.innerHTML = "<p>Please enter valid values for your coordinates and elevation.</p>";
-        return;
-    }
 
     // Calculate target coordinates using observer details
     const bearing_rad = observer_bearing * (Math.PI / 180);
@@ -326,7 +322,11 @@ function calculateTargetDetails() {
     let angle = Math.atan2(target_y - your_y, target_x - your_x) * (180 / Math.PI);
     let bearing_to_target = (angle + 360) % 360;
 
+    // If the calculated bearing is off, try adding 90° (or another offset) to adjust:
+    bearing_to_target = (bearing_to_target + 90) % 360;
+
     // Display the results
+    const resultDiv = document.getElementById("targetResult");
     resultDiv.innerHTML = `<p>Target Coordinates: (${target_x.toFixed(2)}, ${target_y.toFixed(2)})</p>`;
     resultDiv.innerHTML += `<p>Target Elevation: ${target_elevation.toFixed(2)} meters</p>`;
     resultDiv.innerHTML += `<p>Horizontal Distance from Your Position to Target: ${horizontal_distance_to_target.toFixed(2)} meters</p>`;
@@ -336,16 +336,9 @@ function calculateTargetDetails() {
     // Automatically fill the distance in the barrel elevation section
     document.getElementById('distance').value = true_distance_to_target.toFixed(2);
 
-    // Update the global variables
-    observer = { x: observer_x, y: observer_y };
-    target = { x: target_x, y: target_y };
-    player = { x: your_x, y: your_y };
-
-    // Draw the map
-    drawMap(observer, target, player);
+    // Draw the map using the UTM coordinates
+    drawMap({ x: observer_x, y: observer_y }, { x: target_x, y: target_y }, { x: your_x, y: your_y });
 }
-
-
 
 
 // Function to calculate scaling factor for the map based on coordinates
@@ -397,7 +390,7 @@ function drawMap(observer, target, player) {
     const canvas = document.getElementById('mapCanvas');
     const ctx = canvas.getContext('2d');
 
-    // Calculate scale and offset
+    // Calculate scale and offset based on the UTM coordinates
     const canvasSize = { width: canvas.width, height: canvas.height };
     const { scale, offsetX, offsetY } = calculateScaleAndOffset([observer, target, player], canvasSize);
 
@@ -406,7 +399,8 @@ function drawMap(observer, target, player) {
 
     // Draw the grid
     drawGrid(ctx, canvasSize, scale, offsetX, offsetY);
-// Draw the observer
+
+    // Draw the observer
     ctx.fillStyle = 'cyan';
     ctx.beginPath();
     ctx.arc(observer.x * scale + offsetX, observer.y * scale + offsetY, 5, 0, 2 * Math.PI);
@@ -454,6 +448,7 @@ function drawMap(observer, target, player) {
     // Automatically fill the distance in the barrel elevation section
     document.getElementById('distance').value = distancePT.toFixed(2);
 }
+
 
 // Function to export the map as an image
 function exportMap() {
