@@ -243,49 +243,54 @@ let observer, target, player;
 // Function to calculate elevation based on distance and muzzle velocity
 function calculateElevation() {
     const distance = parseFloat(document.getElementById("distance").value);
-    const muzzleVelocity = parseFloat(document.getElementById("muzzleVelocity").value);
-    const fireMode = document.getElementById("fireMode").value;
+    const initialVelocity = 188.48; // Corrected initial velocity
+    const airDrag = 0.0043000;
+    const projectileMass = 23.0; // kg
+    const g = 9.81; // Gravity in m/s²
+    const timeStep = 0.01; // Small time step for the simulation in seconds
 
-    if (isNaN(distance) || isNaN(muzzleVelocity) || distance <= 0 || muzzleVelocity <= 0) {
-        document.getElementById('result').innerHTML = "<p class='error'>Please enter valid numeric values for distance and muzzle velocity.</p>";
+    if (isNaN(distance) || distance <= 0) {
+        document.getElementById('result').innerHTML = "<p class='error'>Please enter a valid distance.</p>";
         return;
     }
 
-    const g = 9.81; // Gravity in m/s^2
+    let velocity = initialVelocity;
+    let position = 0;
+    let elevationAngleRad = 0.01; // Small initial angle in radians
+    let timeOfFlight = 0;
 
-    // Calculate direct fire angle in radians
-    let directAngleRad = Math.asin((distance * g) / (muzzleVelocity ** 2)) / 2;
+    // Iterate to simulate the projectile's travel and adjust for air drag
+    while (position < distance) {
+        // Calculate the drag force and resulting deceleration
+        let dragForce = airDrag * velocity ** 2;
+        let deceleration = dragForce / projectileMass;
 
-    // Convert to degrees
-    let directAngleDeg = directAngleRad * (180 / Math.PI);
+        // Update the velocity considering the deceleration due to drag
+        velocity -= deceleration * timeStep;
 
-    // Convert to mils
-    let directAngleMil = directAngleDeg / 0.05625;
+        // Update the position based on the current velocity and elevation angle
+        position += velocity * Math.cos(elevationAngleRad) * timeStep;
 
-    let elevationMil;
-    let timeOfFlight;
+        // Increment the time of flight
+        timeOfFlight += timeStep;
 
-    // If indirect fire is selected, calculate the indirect angle
-    if (fireMode === 'indirect') {
-        let indirectAngleDeg = 90 - directAngleDeg;
-        let indirectAngleMil = indirectAngleDeg / 0.05625;
-        elevationMil = indirectAngleMil > 1309 ? 1309 : indirectAngleMil;
-
-        // Time of flight for indirect fire
-        timeOfFlight = distance / (muzzleVelocity * Math.cos(indirectAngleDeg * (Math.PI / 180)));
-    } else {
-        elevationMil = directAngleMil > 1309 ? 1309 : directAngleMil;
-
-        // Time of flight for direct fire
-        timeOfFlight = distance / (muzzleVelocity * Math.cos(directAngleDeg * (Math.PI / 180)));
+        // Adjust the elevation angle if needed to correct the trajectory
+        elevationAngleRad += 0.00001; // Small increment for accuracy
     }
 
+    // Convert the final elevation angle to degrees and then to mils
+    let elevationAngleDeg = elevationAngleRad * (180 / Math.PI);
+    let elevationMil = elevationAngleDeg / 0.05625;
+
+    // Clip to maximum elevation mils if necessary
+    elevationMil = Math.min(elevationMil, 1309);
+
+    // Display the results
     document.getElementById('result').innerHTML = `
         <p>Elevation: ${elevationMil.toFixed(2)} mils</p>
         <p>Time of Flight: ${timeOfFlight.toFixed(2)} seconds</p>
     `;
 }
-
 // Function to calculate target details and then draw the map
 function calculateTargetDetails() {
     const observer_x = parseFloat(document.getElementById("observer_x").value) || 0;
