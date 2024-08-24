@@ -299,15 +299,21 @@ function calculateTargetDetails() {
     const targetNorthing = observerNorthing + observerDistance * Math.sin(bearing_rad);
     const targetElevation = observerElevation + elevationDifference;
 
-    // Calculate the horizontal distance to the target
-    const horizontalDistanceToTarget = Math.sqrt(Math.pow(targetEasting - yourEasting, 2) + Math.pow(targetNorthing - yourNorthing, 2));
-    
-    // Calculate the true distance to the target considering elevation
-    const trueDistanceToTarget = Math.sqrt(Math.pow(horizontalDistanceToTarget, 2) + Math.pow(targetElevation - yourElevation, 2));
+    // Calculate the difference in coordinates between the player and the target
+    const deltaEasting = targetEasting - yourEasting;
+    const deltaNorthing = targetNorthing - yourNorthing;
 
     // Calculate bearing from your position to the target
-    let angle = Math.atan2(targetNorthing - yourNorthing, targetEasting - yourEasting) * (180 / Math.PI);
-    let bearingToTarget = (angle + 360) % 360;
+    let bearingToTarget = Math.atan2(deltaNorthing, deltaEasting) * (180 / Math.PI);
+    if (bearingToTarget < 0) {
+        bearingToTarget += 360;
+    }
+
+    // Calculate the horizontal distance to the target
+    const horizontalDistanceToTarget = Math.sqrt(deltaEasting ** 2 + deltaNorthing ** 2);
+    
+    // Calculate the true distance to the target considering elevation
+    const trueDistanceToTarget = Math.sqrt(horizontalDistanceToTarget ** 2 + (targetElevation - yourElevation) ** 2);
 
     // Display the results
     resultDiv.innerHTML = `<p>Target Coordinates: (${targetEasting.toFixed(2)}, ${targetNorthing.toFixed(2)})</p>`;
@@ -327,7 +333,6 @@ function calculateTargetDetails() {
     // Draw the map using the correct coordinates
     drawMap(observer, target, player);
 }
-
 function calculateScaleAndOffset(coordinates, canvasSize) {
     const eastingValues = coordinates.map(coord => coord.easting);
     const northingValues = coordinates.map(coord => coord.northing);
