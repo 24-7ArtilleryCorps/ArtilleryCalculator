@@ -241,9 +241,7 @@ let observer, target, player;
 
 function calculateElevation() {
     const distance = parseFloat(document.getElementById("distance").value);
-    const initialVelocity = 188.48; // Corrected initial velocity
-    const airDrag = 0.0043000;
-    const projectileMass = 23.0; // kg
+    const initialVelocity = 185.72; // Updated muzzle velocity
     const g = 9.81; // Gravity in m/s²
     const timeStep = 0.01; // Small time step for the simulation in seconds
 
@@ -257,15 +255,8 @@ function calculateElevation() {
     let elevationAngleRad = 0.01; // Small initial angle in radians
     let timeOfFlight = 0;
 
-    // Iterate to simulate the projectile's travel and adjust for air drag
+    // Iterate to simulate the projectile's travel
     while (position < distance) {
-        // Calculate the drag force and resulting deceleration
-        let dragForce = airDrag * velocity ** 2;
-        let deceleration = dragForce / projectileMass;
-
-        // Update the velocity considering the deceleration due to drag
-        velocity -= deceleration * timeStep;
-
         // Update the position based on the current velocity and elevation angle
         position += velocity * Math.cos(elevationAngleRad) * timeStep;
 
@@ -277,7 +268,7 @@ function calculateElevation() {
     }
 
     // Convert the final elevation angle to degrees and then to mils
-    let elevationAngleDeg = elevationAngleRad * (180 / Math.PI);
+    let elevationAngleDeg = Math.degrees(elevationAngleRad);
     let elevationMil = elevationAngleDeg / 0.05625;
 
     // Clip to maximum elevation mils if necessary
