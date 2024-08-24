@@ -249,11 +249,16 @@ function calculateElevation() {
     // Calculate the required elevation angle in radians using the ballistic equation
     const sin_2theta = (g * distance) / (initialVelocity ** 2);
     let elevationMil;
+    let timeOfFlight = "N/A";
 
     if (Math.abs(sin_2theta) <= 1) {
         const elevationAngleRad = 0.5 * Math.asin(sin_2theta);
         const elevationAngleDeg = elevationAngleRad * (180 / Math.PI);
         elevationMil = elevationAngleDeg / 0.05625; // Convert degrees to mils
+
+        // Calculate time of flight
+        const velocityX = initialVelocity * Math.cos(elevationAngleRad);
+        timeOfFlight = distance / velocityX;
     } else {
         elevationMil = "Out of range"; // If the calculation goes out of the possible range for arcsin
     }
@@ -261,6 +266,7 @@ function calculateElevation() {
     // Display the results
     document.getElementById('result').innerHTML = `
         <p>Elevation: ${elevationMil.toFixed(2)} mils</p>
+        <p>Time of Flight: ${timeOfFlight.toFixed(2)} seconds</p>
     `;
 }
 
