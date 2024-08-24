@@ -154,7 +154,6 @@
 
     <!-- Discord Link -->
     <a href="https://discord.gg/grkfgh3EAh" class="discord-link" target="_blank">Join our Discord: https://discord.gg/grkfgh3EAh</a>
-
     <!-- Section 1: Calculate Barrel Elevation Based on Distance -->
     <div class="section">
         <h2>Calculate Barrel Elevation</h2>
@@ -162,7 +161,7 @@
         <input type="number" id="distance" placeholder="Enter distance in meters">
 
         <label for="muzzleVelocity">Muzzle Velocity (m/s):</label>
-        <input type="number" id="muzzleVelocity" value="188.48" required>
+        <input type="number" id="muzzleVelocity" value="185.72" required>
 
         <label for="fireMode">Fire Mode:</label>
         <select id="fireMode">
@@ -199,8 +198,6 @@
         <label for="elevation_difference">Elevation Difference to Target (meters):</label>
         <input type="number" id="elevation_difference" placeholder="Enter elevation difference from observer to target" value="0">
 
-    
-
         <!-- Your Coordinates -->
         <h3>Your Coordinates</h3>
         <label for="your_x">Your Easting:</label>
@@ -216,7 +213,6 @@
         
         <div class="result" id="targetResult"></div>
     </div>
-
     <!-- Canvas for visualization -->
     <div style="position: relative;">
         <canvas id="mapCanvas" width="800" height="400"></canvas>
@@ -237,6 +233,7 @@
 
 <!-- Include your script section here -->
 <script>
+// Variables to store the observer, target, and player coordinates globally
 let observer, target, player;
 
 function calculateElevation() {
@@ -268,7 +265,7 @@ function calculateElevation() {
     }
 
     // Convert the final elevation angle to degrees and then to mils
-    let elevationAngleDeg = Math.degrees(elevationAngleRad);
+    let elevationAngleDeg = elevationAngleRad * (180 / Math.PI);
     let elevationMil = elevationAngleDeg / 0.05625;
 
     // Clip to maximum elevation mils if necessary
@@ -337,6 +334,48 @@ function calculateTargetDetails() {
 
     // Draw the map using the correct coordinates
     drawMap(observer, target, player);
+}
+
+function calculateScaleAndOffset(coordinates, canvasSize) {
+    const eastingValues = coordinates.map(coord => coord.easting);
+    const northingValues = coordinates.map(coord => coord.northing);
+
+    const minEasting = Math.min(...eastingValues);
+    const maxEasting = Math.max(...eastingValues);
+    const minNorthing = Math.min(...northingValues);
+    const maxNorthing = Math.max(...northingValues);
+
+    const padding = 40; // Safe margin in pixels
+    const scaleX = (canvasSize.width - 2 * padding) / (maxEasting - minEasting); // Adjust scale to account for padding
+    const scaleY = (canvasSize.height - 2 * padding) / (maxNorthing - minNorthing); // Adjust scale to account for padding
+    const scale = Math.min(scaleX, scaleY);
+
+    const offsetX = padding - minEasting * scale;
+    const offsetY = padding - minNorthing * scale;
+
+    return { scale, offsetX, offsetY };
+}
+
+function drawGrid(ctx, canvasSize, scale, offsetX, offsetY) {
+    const gridSize = 50; // Adjust grid size as needed
+    ctx.strokeStyle = '#444'; // Grid color
+    ctx.lineWidth = 1;
+
+    // Draw vertical grid lines
+    for (let x = 0; x <= canvasSize.width; x += gridSize * scale) {
+        ctx.beginPath();
+        ctx.moveTo(x + offsetX % (gridSize * scale), 0);
+        ctx.lineTo(x + offsetX % (gridSize * scale), canvasSize.height);
+        ctx.stroke();
+    }
+
+    // Draw horizontal grid lines
+    for (let y = 0; y <= canvasSize.height; y += gridSize * scale) {
+        ctx.beginPath();
+        ctx.moveTo(0, y + offsetY % (gridSize * scale));
+        ctx.lineTo(canvasSize.width, y + offsetY % (gridSize * scale));
+        ctx.stroke();
+    }
 }
 
 function drawMap(observer, target, player) {
@@ -410,7 +449,6 @@ function exportMap() {
     link.click();
 }
 </script>
-
 
 </body>
 </html>
