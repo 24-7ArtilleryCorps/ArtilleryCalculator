@@ -36,7 +36,7 @@
             text-shadow: 0 0 5px #00ff00;
         }
 
-        input[type="number"], select {
+        input[type="number"], input[type="text"], select {
             width: 100%;
             padding: 10px;
             margin: 10px 0;
@@ -112,14 +112,13 @@
             margin-right: 5px;
         }
 
-        /* Compass Rose */
         .compass-rose {
             position: absolute;
             top: 20px;
             right: 20px;
             width: 80px;
             height: 80px;
-            background: url('https://upload.wikimedia.org/wikipedia/commons/9/96/Compass_rose_en_08p.svg') no-repeat center center;
+            background: url('https://upload.wikimedia.org/wikipedia/commons/thumb/2/27/Compass_rose_dark_petal_4.svg/800px-Compass_rose_dark_petal_4.svg.png') no-repeat center center;
             background-size: contain;
         }
 
@@ -150,12 +149,11 @@
     <h1>Artillery Elevation Calculator</h1>
 
     <!-- Server Image -->
-    <img src="Logo maker project.png" alt="Server Logo" class="server-image">
+    <img src="/mnt/data/Logo maker project.png" alt="Server Logo" class="server-image">
 
     <!-- Discord Link -->
     <a href="https://discord.gg/grkfgh3EAh" class="discord-link" target="_blank">Join our Discord: https://discord.gg/grkfgh3EAh</a>
-
-    <!-- Section 1: Calculate Barrel Elevation Based on Distance -->
+   <!-- Section 1: Calculate Barrel Elevation Based on Distance -->
     <div class="section">
         <h2>Calculate Barrel Elevation</h2>
         <label for="distance">Enter Distance (meters):</label>
@@ -176,40 +174,40 @@
     </div>
 
     <!-- Section 2: Calculate Target Details with Elevation -->
- <div class="section">
-    <h2>Calculate Target Details with Elevation</h2>
-    
-    <!-- Observer Details -->
-    <h3>Observer Details (Optional)</h3>
-    
-    <label for="observer_mgrs">Observer MGRS Coordinate:</label>
-    <input type="text" id="observer_mgrs" placeholder="Enter observer MGRS coordinate">
+    <div class="section">
+        <h2>Calculate Target Details with Elevation</h2>
+        
+        <!-- Observer Details -->
+        <h3>Observer Details (Optional)</h3>
+        
+        <label for="observer_mgrs">Observer MGRS Coordinate:</label>
+        <input type="text" id="observer_mgrs" placeholder="Enter observer MGRS coordinate">
 
-    <label for="observer_bearing">Bearing from Observer (degrees):</label>
-    <input type="number" id="observer_bearing" placeholder="Enter bearing from observer" value="0">
-    
-    <label for="observer_distance">Distance from Observer (meters):</label>
-    <input type="number" id="observer_distance" placeholder="Enter distance from observer" value="0">
-    
-    <label for="observer_elevation">Observer Elevation (meters):</label>
-    <input type="number" id="observer_elevation" placeholder="Enter observer elevation" value="0">
+        <label for="observer_bearing">Bearing from Observer (degrees):</label>
+        <input type="number" id="observer_bearing" placeholder="Enter bearing from observer" value="0">
+        
+        <label for="observer_distance">Distance from Observer (meters):</label>
+        <input type="number" id="observer_distance" placeholder="Enter distance from observer" value="0">
+        
+        <label for="observer_elevation">Observer Elevation (meters):</label>
+        <input type="number" id="observer_elevation" placeholder="Enter observer elevation" value="0">
 
-    <label for="elevation_difference">Elevation Difference to Target (meters):</label>
-    <input type="number" id="elevation_difference" placeholder="Enter elevation difference from observer to target" value="0">
-    
-    <!-- Your Coordinates -->
-    <h3>Your Coordinates</h3>
-    
-    <label for="your_mgrs">Your MGRS Coordinate:</label>
-    <input type="text" id="your_mgrs" placeholder="Enter your MGRS coordinate">
+        <label for="elevation_difference">Elevation Difference to Target (meters):</label>
+        <input type="number" id="elevation_difference" placeholder="Enter elevation difference from observer to target" value="0">
+        
+        <!-- Your Coordinates -->
+        <h3>Your Coordinates</h3>
+        
+        <label for="your_mgrs">Your MGRS Coordinate:</label>
+        <input type="text" id="your_mgrs" placeholder="Enter your MGRS coordinate">
 
-    <label for="your_elevation">Your Elevation (meters):</label>
-    <input type="number" id="your_elevation" placeholder="Enter your elevation" value="0">
+        <label for="your_elevation">Your Elevation (meters):</label>
+        <input type="number" id="your_elevation" placeholder="Enter your elevation" value="0">
 
-    <button onclick="calculateTargetDetails()">Calculate Target Details</button>
-    
-    <div class="result" id="targetResult"></div>
-</div>
+        <button onclick="calculateTargetDetails()">Calculate Target Details</button>
+        
+        <div class="result" id="targetResult"></div>
+    </div>
 
     <!-- Canvas for visualization -->
     <div style="position: relative;">
@@ -227,10 +225,8 @@
     <!-- Button to export the map as an image -->
     <button onclick="exportMap()">Export Map as Image</button>
 </div>
-
-
-<!-- Include your script section here -->
 <script src="https://cdn.jsdelivr.net/npm/mgrs@1.0.0/mgrs.js"></script>
+
 <script>
 // Variables to store the observer, target, and player coordinates globally
 let observer, target, player;
@@ -281,7 +277,7 @@ function calculateElevation() {
     `;
 }
 
-// Function to calculate target details and then draw the map
+// Function to calculate target details using MGRS coordinates and then draw the map
 function calculateTargetDetails() {
     const observer_mgrs = document.getElementById("observer_mgrs").value;
     const your_mgrs = document.getElementById("your_mgrs").value;
@@ -338,7 +334,6 @@ function calculateTargetDetails() {
     drawMap({ x: observer_x, y: observer_y }, { x: target_x, y: target_y }, { x: your_x, y: your_y });
 }
 
-
 // Function to calculate scaling factor for the map based on coordinates
 function calculateScaleAndOffset(coordinates, canvasSize) {
     const xValues = coordinates.map(coord => coord.x);
@@ -388,7 +383,7 @@ function drawMap(observer, target, player) {
     const canvas = document.getElementById('mapCanvas');
     const ctx = canvas.getContext('2d');
 
-    // Calculate scale and offset based on the UTM coordinates
+    // Calculate scale and offset
     const canvasSize = { width: canvas.width, height: canvas.height };
     const { scale, offsetX, offsetY } = calculateScaleAndOffset([observer, target, player], canvasSize);
 
@@ -447,7 +442,6 @@ function drawMap(observer, target, player) {
     document.getElementById('distance').value = distancePT.toFixed(2);
 }
 
-
 // Function to export the map as an image
 function exportMap() {
     const canvas = document.getElementById('mapCanvas');
@@ -457,8 +451,5 @@ function exportMap() {
     link.click();
 }
 </script>
-
-
 </body>
 </html>
-
