@@ -293,15 +293,15 @@ function calculateElevation() {
 }
 // Function to calculate target details and then draw the map
 function calculateTargetDetails() {
-    const observerEasting = parseFloat(document.getElementById("observer_x").value) || 0;
-    const observerNorthing = parseFloat(document.getElementById("observer_y").value) || 0;
+    let observerEasting = parseFloat(document.getElementById("observer_x").value) || 0;
+    let observerNorthing = parseFloat(document.getElementById("observer_y").value) || 0;
     const observerBearing = parseFloat(document.getElementById("observer_bearing").value) || 0;
     const observerDistance = parseFloat(document.getElementById("observer_distance").value) || 0;
     const observerElevation = parseFloat(document.getElementById("observer_elevation").value) || 0;
     const elevationDifference = parseFloat(document.getElementById("elevation_difference").value) || 0;
 
-    const yourEasting = parseFloat(document.getElementById("your_x").value) || 0;
-    const yourNorthing = parseFloat(document.getElementById("your_y").value) || 0;
+    let yourEasting = parseFloat(document.getElementById("your_x").value) || 0;
+    let yourNorthing = parseFloat(document.getElementById("your_y").value) || 0;
     const yourElevation = parseFloat(document.getElementById("your_elevation").value) || 0;
     
     const resultDiv = document.getElementById("targetResult");
@@ -314,6 +314,10 @@ function calculateTargetDetails() {
         resultDiv.innerHTML = "<p>Please enter valid values for your coordinates and elevation.</p>";
         return;
     }
+
+    // Swap Easting and Northing to ensure correct bearing calculation
+    [observerEasting, observerNorthing] = [observerNorthing, observerEasting];
+    [yourEasting, yourNorthing] = [yourNorthing, yourEasting];
 
     // Calculate target coordinates using observer details
     const bearing_rad = observerBearing * (Math.PI / 180);
@@ -330,9 +334,6 @@ function calculateTargetDetails() {
     // Calculate bearing from your position to the target
     let angle = Math.atan2(targetNorthing - yourNorthing, targetEasting - yourEasting) * (180 / Math.PI);
     let bearingToTarget = (angle + 360) % 360;
-
-    // If the calculated bearing is off, try adding 90° (or another offset) to adjust:
-    bearingToTarget = (bearingToTarget + 90) % 360;
 
     // Display the results
     resultDiv.innerHTML = `<p>Target Coordinates: (${targetEasting.toFixed(2)}, ${targetNorthing.toFixed(2)})</p>`;
