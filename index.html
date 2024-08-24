@@ -282,15 +282,15 @@ function calculateElevation() {
 }
 
 function calculateTargetDetails() {
-    let observerEasting = parseFloat(document.getElementById("observer_x").value) || 0;
-    let observerNorthing = parseFloat(document.getElementById("observer_y").value) || 0;
+    const observerEasting = parseFloat(document.getElementById("observer_x").value) || 0;
+    const observerNorthing = parseFloat(document.getElementById("observer_y").value) || 0;
     const observerBearing = parseFloat(document.getElementById("observer_bearing").value) || 0;
     const observerDistance = parseFloat(document.getElementById("observer_distance").value) || 0;
     const observerElevation = parseFloat(document.getElementById("observer_elevation").value) || 0;
     const elevationDifference = parseFloat(document.getElementById("elevation_difference").value) || 0;
 
-    let yourEasting = parseFloat(document.getElementById("your_x").value) || 0;
-    let yourNorthing = parseFloat(document.getElementById("your_y").value) || 0;
+    const yourEasting = parseFloat(document.getElementById("your_x").value) || 0;
+    const yourNorthing = parseFloat(document.getElementById("your_y").value) || 0;
     const yourElevation = parseFloat(document.getElementById("your_elevation").value) || 0;
     
     const resultDiv = document.getElementById("targetResult");
@@ -303,10 +303,6 @@ function calculateTargetDetails() {
         resultDiv.innerHTML = "<p>Please enter valid values for your coordinates and elevation.</p>";
         return;
     }
-
-    // Swap Easting and Northing to ensure correct bearing calculation
-    [observerEasting, observerNorthing] = [observerNorthing, observerEasting];
-    [yourEasting, yourNorthing] = [yourNorthing, yourEasting];
 
     // Calculate target coordinates using observer details
     const bearing_rad = observerBearing * (Math.PI / 180);
@@ -339,50 +335,8 @@ function calculateTargetDetails() {
     target = { easting: targetEasting, northing: targetNorthing };
     player = { easting: yourEasting, northing: yourNorthing };
 
-    // Draw the map
+    // Draw the map using the correct coordinates
     drawMap(observer, target, player);
-}
-
-function calculateScaleAndOffset(coordinates, canvasSize) {
-    const eastingValues = coordinates.map(coord => coord.easting);
-    const northingValues = coordinates.map(coord => coord.northing);
-
-    const minEasting = Math.min(...eastingValues);
-    const maxEasting = Math.max(...eastingValues);
-    const minNorthing = Math.min(...northingValues);
-    const maxNorthing = Math.max(...northingValues);
-
-    const padding = 40; // Safe margin in pixels
-    const scaleX = (canvasSize.width - 2 * padding) / (maxEasting - minEasting); // Adjust scale to account for padding
-    const scaleY = (canvasSize.height - 2 * padding) / (maxNorthing - minNorthing); // Adjust scale to account for padding
-    const scale = Math.min(scaleX, scaleY);
-
-    const offsetX = padding - minEasting * scale;
-    const offsetY = padding - minNorthing * scale;
-
-    return { scale, offsetX, offsetY };
-}
-
-function drawGrid(ctx, canvasSize, scale, offsetX, offsetY) {
-    const gridSize = 50; // Adjust grid size as needed
-    ctx.strokeStyle = '#444'; // Grid color
-    ctx.lineWidth = 1;
-
-    // Draw vertical grid lines
-    for (let x = 0; x <= canvasSize.width; x += gridSize * scale) {
-        ctx.beginPath();
-        ctx.moveTo(x + offsetX % (gridSize * scale), 0);
-        ctx.lineTo(x + offsetX % (gridSize * scale), canvasSize.height);
-        ctx.stroke();
-    }
-
-    // Draw horizontal grid lines
-    for (let y = 0; y <= canvasSize.height; y += gridSize * scale) {
-        ctx.beginPath();
-        ctx.moveTo(0, y + offsetY % (gridSize * scale));
-        ctx.lineTo(canvasSize.width, y + offsetY % (gridSize * scale));
-        ctx.stroke();
-    }
 }
 
 function drawMap(observer, target, player) {
@@ -398,7 +352,8 @@ function drawMap(observer, target, player) {
 
     // Draw the grid
     drawGrid(ctx, canvasSize, scale, offsetX, offsetY);
-// Draw the observer
+
+    // Draw the observer
     ctx.fillStyle = 'cyan';
     ctx.beginPath();
     ctx.arc(observer.easting * scale + offsetX, observer.northing * scale + offsetY, 5, 0, 2 * Math.PI);
