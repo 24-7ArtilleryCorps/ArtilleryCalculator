@@ -150,7 +150,7 @@
     <h1>Artillery Elevation Calculator</h1>
 
     <!-- Server Image -->
-    <img src="Logo maker project.png" alt="Server Logo" class="server-image">
+    <img src="/mnt/data/Logo maker project.png" alt="Server Logo" class="server-image">
 
     <!-- Discord Link -->
     <a href="https://discord.gg/grkfgh3EAh" class="discord-link" target="_blank">Join our Discord: https://discord.gg/grkfgh3EAh</a>
@@ -237,10 +237,8 @@
 
 <!-- Include your script section here -->
 <script>
-// Variables to store the observer, target, and player coordinates globally
 let observer, target, player;
 
-// Function to calculate elevation based on distance and muzzle velocity
 function calculateElevation() {
     const distance = parseFloat(document.getElementById("distance").value);
     const initialVelocity = 188.48; // Corrected initial velocity
@@ -291,7 +289,7 @@ function calculateElevation() {
         <p>Time of Flight: ${timeOfFlight.toFixed(2)} seconds</p>
     `;
 }
-// Function to calculate target details and then draw the map
+
 function calculateTargetDetails() {
     let observerEasting = parseFloat(document.getElementById("observer_x").value) || 0;
     let observerNorthing = parseFloat(document.getElementById("observer_y").value) || 0;
@@ -354,31 +352,26 @@ function calculateTargetDetails() {
     drawMap(observer, target, player);
 }
 
-
-
-
-// Function to calculate scaling factor for the map based on coordinates
 function calculateScaleAndOffset(coordinates, canvasSize) {
-    const xValues = coordinates.map(coord => coord.x);
-    const yValues = coordinates.map(coord => coord.y);
+    const eastingValues = coordinates.map(coord => coord.easting);
+    const northingValues = coordinates.map(coord => coord.northing);
 
-    const minX = Math.min(...xValues);
-    const maxX = Math.max(...xValues);
-    const minY = Math.min(...yValues);
-    const maxY = Math.max(...yValues);
+    const minEasting = Math.min(...eastingValues);
+    const maxEasting = Math.max(...eastingValues);
+    const minNorthing = Math.min(...northingValues);
+    const maxNorthing = Math.max(...northingValues);
 
     const padding = 40; // Safe margin in pixels
-    const scaleX = (canvasSize.width - 2 * padding) / (maxX - minX); // Adjust scale to account for padding
-    const scaleY = (canvasSize.height - 2 * padding) / (maxY - minY); // Adjust scale to account for padding
+    const scaleX = (canvasSize.width - 2 * padding) / (maxEasting - minEasting); // Adjust scale to account for padding
+    const scaleY = (canvasSize.height - 2 * padding) / (maxNorthing - minNorthing); // Adjust scale to account for padding
     const scale = Math.min(scaleX, scaleY);
 
-    const offsetX = padding - minX * scale;
-    const offsetY = padding - minY * scale;
+    const offsetX = padding - minEasting * scale;
+    const offsetY = padding - minNorthing * scale;
 
     return { scale, offsetX, offsetY };
 }
 
-// Function to draw grid on the canvas
 function drawGrid(ctx, canvasSize, scale, offsetX, offsetY) {
     const gridSize = 50; // Adjust grid size as needed
     ctx.strokeStyle = '#444'; // Grid color
@@ -401,7 +394,6 @@ function drawGrid(ctx, canvasSize, scale, offsetX, offsetY) {
     }
 }
 
-// Function to draw the map based on input coordinates
 function drawMap(observer, target, player) {
     const canvas = document.getElementById('mapCanvas');
     const ctx = canvas.getContext('2d');
@@ -418,23 +410,23 @@ function drawMap(observer, target, player) {
 // Draw the observer
     ctx.fillStyle = 'cyan';
     ctx.beginPath();
-    ctx.arc(observer.x * scale + offsetX, observer.y * scale + offsetY, 5, 0, 2 * Math.PI);
+    ctx.arc(observer.easting * scale + offsetX, observer.northing * scale + offsetY, 5, 0, 2 * Math.PI);
     ctx.fill();
-    ctx.fillText('Observer', observer.x * scale + offsetX + 10, observer.y * scale + offsetY + 5);
+    ctx.fillText('Observer', observer.easting * scale + offsetX + 10, observer.northing * scale + offsetY + 5);
 
     // Draw the target
     ctx.fillStyle = 'red';
     ctx.beginPath();
-    ctx.arc(target.x * scale + offsetX, target.y * scale + offsetY, 5, 0, 2 * Math.PI);
+    ctx.arc(target.easting * scale + offsetX, target.northing * scale + offsetY, 5, 0, 2 * Math.PI);
     ctx.fill();
-    ctx.fillText('Target', target.x * scale + offsetX + 10, target.y * scale + offsetY + 5);
+    ctx.fillText('Target', target.easting * scale + offsetX + 10, target.northing * scale + offsetY + 5);
 
     // Draw the player
     ctx.fillStyle = 'lime';
     ctx.beginPath();
-    ctx.arc(player.x * scale + offsetX, player.y * scale + offsetY, 5, 0, 2 * Math.PI);
+    ctx.arc(player.easting * scale + offsetX, player.northing * scale + offsetY, 5, 0, 2 * Math.PI);
     ctx.fill();
-    ctx.fillText('Player', player.x * scale + offsetX + 10, player.y * scale + offsetY + 5);
+    ctx.fillText('Player', player.easting * scale + offsetX + 10, player.northing * scale + offsetY + 5);
 
     // Draw lines between observer and target, and player and target
     ctx.strokeStyle = '#00ff00';
@@ -442,29 +434,28 @@ function drawMap(observer, target, player) {
 
     // Line from observer to target
     ctx.beginPath();
-    ctx.moveTo(observer.x * scale + offsetX, observer.y * scale + offsetY);
-    ctx.lineTo(target.x * scale + offsetX, target.y * scale + offsetY);
+    ctx.moveTo(observer.easting * scale + offsetX, observer.northing * scale + offsetY);
+    ctx.lineTo(target.easting * scale + offsetX, target.northing * scale + offsetY);
     ctx.stroke();
 
     // Line from player to target
     ctx.beginPath();
-    ctx.moveTo(player.x * scale + offsetX, player.y * scale + offsetY);
-    ctx.lineTo(target.x * scale + offsetX, target.y * scale + offsetY);
+    ctx.moveTo(player.easting * scale + offsetX, player.northing * scale + offsetY);
+    ctx.lineTo(target.easting * scale + offsetX, target.northing * scale + offsetY);
     ctx.stroke();
 
     // Display distance between points
-    const distanceOT = Math.sqrt(Math.pow(target.x - observer.x, 2) + Math.pow(target.y - observer.y, 2));
-    const distancePT = Math.sqrt(Math.pow(target.x - player.x, 2) + Math.pow(target.y - player.y, 2));
+    const distanceOT = Math.sqrt(Math.pow(target.easting - observer.easting, 2) + Math.pow(target.northing - observer.northing, 2));
+    const distancePT = Math.sqrt(Math.pow(target.easting - player.easting, 2) + Math.pow(target.northing - player.northing, 2));
 
     ctx.fillStyle = '#ffffff';
-    ctx.fillText(`${distanceOT.toFixed(2)} units`, (observer.x + target.x) * scale / 2 + offsetX, (observer.y + target.y) * scale / 2 + offsetY);
-    ctx.fillText(`${distancePT.toFixed(2)} units`, (player.x + target.x) * scale / 2 + offsetX, (player.y + target.y) * scale / 2 + offsetY);
+    ctx.fillText(`${distanceOT.toFixed(2)} units`, (observer.easting + target.easting) * scale / 2 + offsetX, (observer.northing + target.northing) * scale / 2 + offsetY);
+    ctx.fillText(`${distancePT.toFixed(2)} units`, (player.easting + target.easting) * scale / 2 + offsetX, (player.northing + target.northing) * scale / 2 + offsetY);
 
     // Automatically fill the distance in the barrel elevation section
     document.getElementById('distance').value = distancePT.toFixed(2);
 }
 
-// Function to export the map as an image
 function exportMap() {
     const canvas = document.getElementById('mapCanvas');
     const link = document.createElement('a');
