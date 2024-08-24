@@ -230,6 +230,7 @@
 
 
 <!-- Include your script section here -->
+<script src="https://cdn.jsdelivr.net/npm/mgrs@1.0.0/mgrs.js"></script>
 <script>
 // Variables to store the observer, target, and player coordinates globally
 let observer, target, player;
@@ -281,9 +282,6 @@ function calculateElevation() {
 }
 
 // Function to calculate target details and then draw the map
-<script src="https://cdn.jsdelivr.net/npm/mgrs@1.0.0/mgrs.js"></script>
-
-<script>
 function calculateTargetDetails() {
     const observer_mgrs = document.getElementById("observer_mgrs").value;
     const your_mgrs = document.getElementById("your_mgrs").value;
