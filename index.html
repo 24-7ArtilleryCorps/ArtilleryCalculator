@@ -293,16 +293,16 @@ function calculateElevation() {
 }
 // Function to calculate target details and then draw the map
 function calculateTargetDetails() {
-    const observer_x = parseFloat(document.getElementById("observer_x").value) || 0;
-    const observer_y = parseFloat(document.getElementById("observer_y").value) || 0;
-    const observer_bearing = parseFloat(document.getElementById("observer_bearing").value) || 0;
-    const observer_distance = parseFloat(document.getElementById("observer_distance").value) || 0;
-    const observer_elevation = parseFloat(document.getElementById("observer_elevation").value) || 0;
-    const elevation_difference = parseFloat(document.getElementById("elevation_difference").value) || 0;
+    const observerEasting = parseFloat(document.getElementById("observer_x").value) || 0;
+    const observerNorthing = parseFloat(document.getElementById("observer_y").value) || 0;
+    const observerBearing = parseFloat(document.getElementById("observer_bearing").value) || 0;
+    const observerDistance = parseFloat(document.getElementById("observer_distance").value) || 0;
+    const observerElevation = parseFloat(document.getElementById("observer_elevation").value) || 0;
+    const elevationDifference = parseFloat(document.getElementById("elevation_difference").value) || 0;
 
-    const your_x = parseFloat(document.getElementById("your_x").value) || 0;
-    const your_y = parseFloat(document.getElementById("your_y").value) || 0;
-    const your_elevation = parseFloat(document.getElementById("your_elevation").value) || 0;
+    const yourEasting = parseFloat(document.getElementById("your_x").value) || 0;
+    const yourNorthing = parseFloat(document.getElementById("your_y").value) || 0;
+    const yourElevation = parseFloat(document.getElementById("your_elevation").value) || 0;
     
     const resultDiv = document.getElementById("targetResult");
 
@@ -310,49 +310,48 @@ function calculateTargetDetails() {
     resultDiv.innerHTML = "";
 
     // Validate your coordinates and elevation
-    if (isNaN(your_x) || isNaN(your_y) || isNaN(your_elevation)) {
+    if (isNaN(yourEasting) || isNaN(yourNorthing) || isNaN(yourElevation)) {
         resultDiv.innerHTML = "<p>Please enter valid values for your coordinates and elevation.</p>";
         return;
     }
 
     // Calculate target coordinates using observer details
-    const bearing_rad = observer_bearing * (Math.PI / 180);
-    const target_x = observer_x + observer_distance * Math.cos(bearing_rad);
-    const target_y = observer_y + observer_distance * Math.sin(bearing_rad);
-    const target_elevation = observer_elevation + elevation_difference;
+    const bearing_rad = observerBearing * (Math.PI / 180);
+    const targetEasting = observerEasting + observerDistance * Math.cos(bearing_rad);
+    const targetNorthing = observerNorthing + observerDistance * Math.sin(bearing_rad);
+    const targetElevation = observerElevation + elevationDifference;
 
     // Calculate the horizontal distance to the target
-    const horizontal_distance_to_target = Math.sqrt(Math.pow(target_x - your_x, 2) + Math.pow(target_y - your_y, 2));
+    const horizontalDistanceToTarget = Math.sqrt(Math.pow(targetEasting - yourEasting, 2) + Math.pow(targetNorthing - yourNorthing, 2));
     
     // Calculate the true distance to the target considering elevation
-    const true_distance_to_target = Math.sqrt(Math.pow(horizontal_distance_to_target, 2) + Math.pow(target_elevation - your_elevation, 2));
+    const trueDistanceToTarget = Math.sqrt(Math.pow(horizontalDistanceToTarget, 2) + Math.pow(targetElevation - yourElevation, 2));
 
     // Calculate bearing from your position to the target
-    let angle = Math.atan2(target_y - your_y, target_x - your_x) * (180 / Math.PI);
-    let bearing_to_target = (angle + 360) % 360;
+    let angle = Math.atan2(targetNorthing - yourNorthing, targetEasting - yourEasting) * (180 / Math.PI);
+    let bearingToTarget = (angle + 360) % 360;
 
     // If the calculated bearing is off, try adding 90° (or another offset) to adjust:
-    bearing_to_target = (bearing_to_target + 90) % 360;
+    bearingToTarget = (bearingToTarget + 90) % 360;
 
     // Display the results
-    resultDiv.innerHTML = `<p>Target Coordinates: (${target_x.toFixed(2)}, ${target_y.toFixed(2)})</p>`;
-    resultDiv.innerHTML += `<p>Target Elevation: ${target_elevation.toFixed(2)} meters</p>`;
-    resultDiv.innerHTML += `<p>Horizontal Distance from Your Position to Target: ${horizontal_distance_to_target.toFixed(2)} meters</p>`;
-    resultDiv.innerHTML += `<p>True Distance from Your Position to Target: ${true_distance_to_target.toFixed(2)} meters</p>`;
-    resultDiv.innerHTML += `<p>Bearing from Your Position to Target: ${bearing_to_target.toFixed(2)}°</p>`;
+    resultDiv.innerHTML = `<p>Target Coordinates: (${targetEasting.toFixed(2)}, ${targetNorthing.toFixed(2)})</p>`;
+    resultDiv.innerHTML += `<p>Target Elevation: ${targetElevation.toFixed(2)} meters</p>`;
+    resultDiv.innerHTML += `<p>Horizontal Distance from Your Position to Target: ${horizontalDistanceToTarget.toFixed(2)} meters</p>`;
+    resultDiv.innerHTML += `<p>True Distance from Your Position to Target: ${trueDistanceToTarget.toFixed(2)} meters</p>`;
+    resultDiv.innerHTML += `<p>Bearing from Your Position to Target: ${bearingToTarget.toFixed(2)}°</p>`;
 
     // Automatically fill the distance in the barrel elevation section
-    document.getElementById('distance').value = true_distance_to_target.toFixed(2);
+    document.getElementById('distance').value = trueDistanceToTarget.toFixed(2);
 
     // Update the global variables
-    observer = { x: observer_x, y: observer_y };
-    target = { x: target_x, y: target_y };
-    player = { x: your_x, y: your_y };
+    observer = { easting: observerEasting, northing: observerNorthing };
+    target = { easting: targetEasting, northing: targetNorthing };
+    player = { easting: yourEasting, northing: yourNorthing };
 
     // Draw the map
     drawMap(observer, target, player);
 }
-
 
 
 
