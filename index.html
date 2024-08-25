@@ -154,65 +154,78 @@
 
     <!-- Discord Link -->
     <a href="https://discord.gg/grkfgh3EAh" class="discord-link" target="_blank">Join our Discord: https://discord.gg/grkfgh3EAh</a>
-    <!-- Section 1: Calculate Barrel Elevation Based on Distance -->
     <div class="section">
-        <h2>Calculate Barrel Elevation</h2>
-        <label for="distance">Enter Distance (meters):</label>
-        <input type="number" id="distance" placeholder="Enter distance in meters">
+    <h2>Calculate Barrel Elevation</h2>
+    
+    <label for="distance">Enter Distance (meters):</label>
+    <input type="number" id="distance" placeholder="Enter distance in meters" required>
 
-        <label for="muzzleVelocity">Muzzle Velocity (m/s):</label>
-        <input type="number" id="muzzleVelocity" value="185.72" required>
+    <label for="launchHeight">Launch Height (meters):</label>
+    <input type="number" id="launchHeight" placeholder="Enter launch height in meters">
 
-        <label for="fireMode">Fire Mode:</label>
-        <select id="fireMode">
-            <option value="direct">Direct Fire</option>
-            <option value="indirect">Indirect Fire</option>
-        </select>
+    <label for="targetHeight">Target Height (meters):</label>
+    <input type="number" id="targetHeight" placeholder="Enter target height in meters">
 
-        <button onclick="calculateElevation()">Calculate Elevation</button>
-        
-        <div class="result" id="result"></div>
-    </div>
+    <label for="projectileMass">Projectile Mass (kg):</label>
+    <input type="number" id="projectileMass" value="23" placeholder="Enter projectile mass in kg">
 
-    <!-- Section 2: Calculate Target Details with Elevation -->
-    <div class="section">
-        <h2>Calculate Target Details with Elevation</h2>
-        
-        <!-- Observer Details -->
-        <h3>Observer Details (Optional)</h3>
-        <label for="observer_x">Observer Easting:</label>
-        <input type="number" id="observer_x" placeholder="Enter observer Easting" value="0">
-        
-        <label for="observer_y">Observer Northing:</label>
-        <input type="number" id="observer_y" placeholder="Enter observer Northing" value="0">
-        
-        <label for="observer_bearing">Bearing from Observer (degrees):</label>
-        <input type="number" id="observer_bearing" placeholder="Enter bearing from observer" value="0">
-        
-        <label for="observer_distance">Distance from Observer (meters):</label>
-        <input type="number" id="observer_distance" placeholder="Enter distance from observer" value="0">
-        
-        <label for="observer_elevation">Observer Elevation (meters):</label>
-        <input type="number" id="observer_elevation" placeholder="Enter observer elevation" value="0">
+    <label for="airDrag">Projectile Air Drag:</label>
+    <input type="number" id="airDrag" value="0.0043" placeholder="Enter air drag coefficient">
 
-        <label for="elevation_difference">Elevation Difference to Target (meters):</label>
-        <input type="number" id="elevation_difference" placeholder="Enter elevation difference from observer to target" value="0">
+    <label for="projectileVelocity">Projectile Velocity (m/s):</label>
+    <input type="number" id="projectileVelocity" value="212.5" placeholder="Enter projectile velocity in m/s">
 
-        <!-- Your Coordinates -->
-        <h3>Your Coordinates</h3>
-        <label for="your_x">Your Easting:</label>
-        <input type="number" id="your_x" placeholder="Enter your Easting" value="0">
-        
-        <label for="your_y">Your Northing:</label>
-        <input type="number" id="your_y" placeholder="Enter your Northing" value="0">
-        
-        <label for="your_elevation">Your Elevation (meters):</label>
-        <input type="number" id="your_elevation" placeholder="Enter your elevation" value="0">
+    <label for="fireMode">Fire Mode:</label>
+    <select id="fireMode">
+        <option value="direct">Direct Fire</option>
+        <option value="indirect">Indirect Fire</option>
+    </select>
 
-        <button onclick="calculateTargetDetails()">Calculate Target Details</button>
-        
-        <div class="result" id="targetResult"></div>
-    </div>
+    <button onclick="calculateElevation()">Calculate Elevation</button>
+    
+    <div class="result" id="result"></div>
+</div>
+
+
+<div class="section">
+    <h2>Calculate Target Details with Elevation</h2>
+    
+    <!-- Observer Details -->
+    <h3>Observer Details (Optional)</h3>
+    <label for="observer_x">Observer Easting:</label>
+    <input type="number" id="observer_x" placeholder="Enter observer Easting" value="0">
+    
+    <label for="observer_y">Observer Northing:</label>
+    <input type="number" id="observer_y" placeholder="Enter observer Northing" value="0">
+    
+    <label for="observer_bearing">Bearing from Observer (degrees):</label>
+    <input type="number" id="observer_bearing" placeholder="Enter bearing from observer" value="0">
+    
+    <label for="observer_distance">Distance from Observer (meters):</label>
+    <input type="number" id="observer_distance" placeholder="Enter distance from observer" value="0">
+    
+    <label for="observer_elevation">Observer Elevation (meters):</label>
+    <input type="number" id="observer_elevation" placeholder="Enter observer elevation" value="0">
+
+    <label for="elevation_difference">Elevation Difference to Target (meters):</label>
+    <input type="number" id="elevation_difference" placeholder="Enter elevation difference from observer to target" value="0">
+
+    <!-- Your Coordinates -->
+    <h3>Your Coordinates</h3>
+    <label for="your_x">Your Easting:</label>
+    <input type="number" id="your_x" placeholder="Enter your Easting" value="0">
+    
+    <label for="your_y">Your Northing:</label>
+    <input type="number" id="your_y" placeholder="Enter your Northing" value="0">
+    
+    <label for="your_elevation">Your Elevation (meters):</label>
+    <input type="number" id="your_elevation" placeholder="Enter your elevation" value="0">
+
+    <button onclick="calculateTargetDetails()">Calculate Target Details</button>
+    
+    <div class="result" id="targetResult"></div>
+</div>
+
     <!-- Canvas for visualization -->
     <div style="position: relative;">
         <canvas id="mapCanvas" width="800" height="400"></canvas>
@@ -232,43 +245,144 @@
 
 
 <!-- Include your script section here -->
+
 <script>
 // Variables to store the observer, target, and player coordinates globally
 let observer, target, player;
+// Constants
+const g = 9.81;  // Acceleration due to gravity (m/s^2)
 
+// Convert degrees to mils
+function degreesToMils(degrees) {
+    return degrees * 17.7777777778;
+}
+
+// Convert mils to degrees
+function milsToDegrees(mils) {
+    return mils * 0.05625;
+}
+
+// Simulate trajectory based on the launch angle and other parameters
+function simulateTrajectory(angleDeg, targetRange, launchHeight, targetHeight, 
+                            projectileMass = 23, projectileAirDrag = 0.0043, projectileVelocity = 212.5) {
+    const angleRad = angleDeg * (Math.PI / 180);
+    let vx = projectileVelocity * Math.cos(angleRad);
+    let vy = projectileVelocity * Math.sin(angleRad);
+    let x = 0, y = launchHeight;
+    const dt = 0.01;
+    const tMax = 100;
+    let step;
+
+    for (step = 0; step < tMax / dt; step++) {
+        const v = Math.sqrt(vx * vx + vy * vy);
+        const dragForce = (v !== 0) ? projectileAirDrag * v * v : 0;
+        const ax = -dragForce * vx / (projectileMass * v);
+        const ay = -g - (dragForce * vy / (projectileMass * v));
+
+        const kx1 = vx * dt;
+        const ky1 = vy * dt;
+        const kvx1 = ax * dt;
+        const kvy1 = ay * dt;
+
+        const kx2 = (vx + kvx1 / 2) * dt;
+        const ky2 = (vy + kvy1 / 2) * dt;
+        const kvx2 = ax * dt;
+        const kvy2 = ay * dt;
+
+        const kx3 = (vx + kvx2 / 2) * dt;
+        const ky3 = (vy + kvy2 / 2) * dt;
+        const kvx3 = ax * dt;
+        const kvy3 = ay * dt;
+
+        const kx4 = (vx + kvx3) * dt;
+        const ky4 = (vy + kvy3) * dt;
+        const kvx4 = ax * dt;
+        const kvy4 = ay * dt;
+
+        x += (kx1 + 2 * kx2 + 2 * kx3 + kx4) / 6;
+        y += (ky1 + 2 * ky2 + 2 * ky3 + ky4) / 6;
+        vx += (kvx1 + 2 * kvx2 + 2 * kvx3 + kvx4) / 6;
+        vy += (kvy1 + 2 * kvy2 + 2 * kvy3 + kvy4) / 6;
+
+        if (x >= targetRange && y <= targetHeight) break;
+    }
+
+    return { x, y, timeOfFlight: step * dt };
+}
+// Objective function for the optimization
+function objectiveFunction(angleDeg, targetRange, launchHeight, targetHeight, 
+                           projectileMass, projectileAirDrag, projectileVelocity) {
+    const result = simulateTrajectory(angleDeg, targetRange, launchHeight, targetHeight, projectileMass, projectileAirDrag, projectileVelocity);
+    return Math.abs(result.x - targetRange) + Math.abs(result.y - targetHeight);
+}
+
+// Optimization function to find the best angle
+function optimizeAngle(targetRange, launchHeight, targetHeight, projectileMass, projectileAirDrag, projectileVelocity) {
+    // Simple binary search method to approximate the angle
+
+    function findOptimalAngle(low, high) {
+        while (high - low > 0.01) {
+            const mid = (low + high) / 2;
+            const fLow = objectiveFunction(low, targetRange, launchHeight, targetHeight, projectileMass, projectileAirDrag, projectileVelocity);
+            const fMid = objectiveFunction(mid, targetRange, launchHeight, targetHeight, projectileMass, projectileAirDrag, projectileVelocity);
+            if (fMid < fLow) {
+                high = mid;
+            } else {
+                low = mid;
+            }
+        }
+        return low;
+    }
+
+    const angleBelow45 = findOptimalAngle(0, 45);
+    const angleAbove45 = findOptimalAngle(45, 90);
+    
+    const directResult = simulateTrajectory(angleBelow45, targetRange, launchHeight, targetHeight, projectileMass, projectileAirDrag, projectileVelocity);
+    const indirectResult = simulateTrajectory(angleAbove45, targetRange, launchHeight, targetHeight, projectileMass, projectileAirDrag, projectileVelocity);
+
+    return {
+        direct_solution_mils: degreesToMils(angleBelow45),
+        direct_time_of_flight: directResult.timeOfFlight,
+        indirect_solution_mils: degreesToMils(angleAbove45) - 17,
+        indirect_time_of_flight: indirectResult.timeOfFlight
+    };
+}
+
+// Function to be called when user clicks the 'Calculate Elevation' button
 function calculateElevation() {
     const distance = parseFloat(document.getElementById("distance").value);
-    const initialVelocity = 185.72; // Updated muzzle velocity
-    const g = 9.81; // Gravity in m/s²
+    const launchHeight = parseFloat(document.getElementById("your_elevation").value) || 0; // Using "Your Elevation"
+    const observerElevation = parseFloat(document.getElementById("observer_elevation").value) || 0;
+    const elevationDifference = parseFloat(document.getElementById("elevation_difference").value) || 0;
+    const targetHeight = observerElevation + elevationDifference; // Target Height derived from observer data
+    const projectileMass = parseFloat(document.getElementById("projectileMass").value) || 23;
+    const airDrag = parseFloat(document.getElementById("airDrag").value) || 0.0043;
+    const projectileVelocity = parseFloat(document.getElementById("projectileVelocity").value) || 212.5;
+    const fireMode = document.getElementById("fireMode").value;
 
     if (isNaN(distance) || distance <= 0) {
         document.getElementById('result').innerHTML = "<p class='error'>Please enter a valid distance.</p>";
         return;
     }
 
-    // Calculate the required elevation angle in radians using the ballistic equation
-    const sin_2theta = (g * distance) / (initialVelocity ** 2);
-    let elevationMil;
-    let timeOfFlight = "N/A";
+    const result = optimizeAngle(distance, launchHeight, targetHeight, projectileMass, airDrag, projectileVelocity);
 
-    if (Math.abs(sin_2theta) <= 1) {
-        const elevationAngleRad = 0.5 * Math.asin(sin_2theta);
-        const elevationAngleDeg = elevationAngleRad * (180 / Math.PI);
-        elevationMil = elevationAngleDeg / 0.05625; // Convert degrees to mils
-
-        // Calculate time of flight
-        const velocityX = initialVelocity * Math.cos(elevationAngleRad);
-        timeOfFlight = distance / velocityX;
+    let elevationMil, timeOfFlight;
+    if (fireMode === 'direct') {
+        elevationMil = result.direct_solution_mils;
+        timeOfFlight = result.direct_time_of_flight;
     } else {
-        elevationMil = "Out of range"; // If the calculation goes out of the possible range for arcsin
+        elevationMil = result.indirect_solution_mils;
+        timeOfFlight = result.indirect_time_of_flight;
     }
 
-    // Display the results
     document.getElementById('result').innerHTML = `
         <p>Elevation: ${elevationMil.toFixed(2)} mils</p>
         <p>Time of Flight: ${timeOfFlight.toFixed(2)} seconds</p>
     `;
 }
+
+
 
 function calculateTargetDetails() {
     const observerEasting = parseFloat(document.getElementById("observer_x").value) || 0;
