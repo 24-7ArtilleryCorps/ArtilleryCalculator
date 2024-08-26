@@ -119,6 +119,21 @@ function main(eastingLauncher, northingLauncher, heightLauncher,
     };
 }
 
+// Function to calculate target grid from observer data
+function observerGridCalc(northingLauncher, eastingLauncher, heightLauncher,
+                          eastingObserver, northingObserver, observerBearingToTarget, observerRangeToTarget, heightTarget) {
+    
+    // Convert bearing to radians
+    const bearingRad = observerBearingToTarget * (Math.PI / 180);
+
+    // Calculate the target's easting and northing using the observer's bearing and range to the target
+    const eastingTarget = eastingObserver + observerRangeToTarget * Math.sin(bearingRad);
+    const northingTarget = northingObserver + observerRangeToTarget * Math.cos(bearingRad);
+
+    // Return the results and call main to finalize the calculation
+    return main(eastingLauncher, northingLauncher, heightLauncher, eastingTarget, northingTarget, heightTarget);
+}
+
 // Example usage
-const result = main(1000, 4000, 10, 1000, 1000, 10);
+const result = observerGridCalc(1000, 1000, 10, 7596, 4299, 90, 1000, 120);
 console.log(result);
