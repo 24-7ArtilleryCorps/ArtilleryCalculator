@@ -147,10 +147,15 @@
         <input type="number" id="elevationDifference" placeholder="Enter elevation difference (Target - Observer)" value="70">
 
         <button onclick="calculate()">Calculate</button>
+       
         
         <div class="result" id="result"></div>
+        <!-- Canvas for Trajectory Path Visualization -->
+        <canvas id="trajectoryCanvas" width="800" height="400"></canvas>
+
     </div>
 </div>
+
 
 <script>
 // Your provided code starts here
@@ -240,6 +245,119 @@ function goldenSectionSearch(lowerBound, upperBound, objectiveFunc, tol = 0.001)
 
     return (upperBound + lowerBound) / 2;
 }
+// Function to draw the trajectory path on a canvas with gridlines and labels
+// Function to draw the trajectory path on a canvas with gridlines and labels
+// Function to draw the trajectory path on a canvas with gridlines and labels
+// Function to draw the trajectory path on a canvas with gridlines and labels, including the impact point
+function drawTrajectoryPath(angleDeg, targetRange, heightLauncher, heightTarget, projectileMass, projectileAirDrag, projectileVelocity) {
+    const canvas = document.getElementById('trajectoryCanvas');
+    const ctx = canvas.getContext('2d');
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    const padding = 40; // Padding for the graph area
+    const graphWidth = canvas.width - padding * 2;
+    const graphHeight = canvas.height - padding * 2;
+
+    const maxDistance = 3000; // Fixed maximum range for X-axis
+    const maxHeight = 500; // Adjusted maximum height for Y-axis based on typical projectile behavior
+
+    // Draw gridlines and labels
+    ctx.strokeStyle = '#444';
+    ctx.lineWidth = 1;
+    ctx.font = '12px Courier New';
+    ctx.fillStyle = '#00ff00';
+
+    // X-axis and Y-axis gridlines
+    for (let i = 0; i <= 10; i++) {
+        const x = padding + (i * graphWidth) / 10;
+        const y = padding + (i * graphHeight) / 10;
+
+        // Vertical gridlines
+        ctx.beginPath();
+        ctx.moveTo(x, padding);
+        ctx.lineTo(x, padding + graphHeight);
+        ctx.stroke();
+        ctx.fillText((maxDistance * i / 10).toFixed(0) + ' m', x - 10, padding + graphHeight + 20);
+
+        // Horizontal gridlines
+        ctx.beginPath();
+        ctx.moveTo(padding, y);
+        ctx.lineTo(padding + graphWidth, y);
+        ctx.stroke();
+        ctx.fillText(((maxHeight * (1 - i / 10)).toFixed(0)) + ' m', padding - 35, y + 5);
+    }
+
+    // Draw X and Y axis labels
+    // Draw Distance Label (horizontal)
+    ctx.fillText('Distance (meters)', canvas.width / 2 - 40, canvas.height - 10);
+
+    // Draw Height Label (vertical)
+    ctx.save(); // Save the current state
+    ctx.translate(10, canvas.height / 2); // Move to the Y-axis label position
+    ctx.rotate(-Math.PI / 2); // Rotate 90 degrees counterclockwise
+    ctx.fillText('Height (meters)', 0, 0); // Draw the text at the new position
+    ctx.restore(); // Restore the original state
+
+    // Draw the trajectory path
+    const angleRad = angleDeg * (Math.PI / 180);
+    let vx0 = projectileVelocity * Math.cos(angleRad);
+    let vy0 = projectileVelocity * Math.sin(angleRad);
+    let x = 0;
+    let y = heightLauncher;
+    const dt = 0.01;
+    const tMax = 100;
+
+    ctx.strokeStyle = '#00ff00';
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.moveTo(padding, padding + graphHeight - (y / maxHeight) * graphHeight);
+
+    let impactX = 0;
+    let impactY = 0;
+
+    for (let step = 0; step < tMax / dt; step++) {
+        const v = Math.sqrt(vx0 * vx0 + vy0 * vy0);
+        const dragForce = (v !== 0) ? projectileAirDrag * v * v : 0;
+        const ax = -dragForce * vx0 / (projectileMass * v);
+        const ay = -g - (dragForce * vy0 / (projectileMass * v));
+
+        vx0 += ax * dt;
+        vy0 += ay * dt;
+        x += vx0 * dt;
+        y += vy0 * dt;
+
+        const scaledX = padding + (x / maxDistance) * graphWidth;
+        const scaledY = padding + graphHeight - (y / maxHeight) * graphHeight;
+
+        ctx.lineTo(scaledX, scaledY);
+
+        if (x >= targetRange || y <= 0) {
+            impactX = scaledX;
+            impactY = scaledY;
+            break;
+        }
+    }
+
+    ctx.stroke();
+
+    // Draw impact point marker
+    if (impactX && impactY) {
+        ctx.fillStyle = '#ff0000';
+        ctx.beginPath();
+        ctx.arc(impactX, impactY, 5, 0, 2 * Math.PI);
+        ctx.fill();
+    }
+}
+
+
+// Example usage after calculating the optimal angle
+drawTrajectoryPath(optimalAngleDegBelow, horizontalDistance, heightLauncher, heightTarget, projectileMass, projectileAirDrag, projectileVelocity);
+
+
+
+// Example usage after calculating the optimal angle
+drawTrajectoryPath(optimalAngleDegBelow, horizontalDistance, heightLauncher, heightTarget, projectileMass, projectileAirDrag, projectileVelocity);
+
 
 // Main function
 function main(eastingLauncher, northingLauncher, heightLauncher,
@@ -265,6 +383,7 @@ function main(eastingLauncher, northingLauncher, heightLauncher,
                                                              projectileMass, projectileAirDrag, projectileVelocity);
 
     // Output values
+    drawTrajectoryPath(optimalAngleDegBelow, horizontalDistance, heightLauncher, heightTarget, projectileMass, projectileAirDrag, projectileVelocity);
     return {
         horizontalDistance: horizontalDistance,
         bearingDeg: bearingDeg.toFixed(2),
@@ -312,6 +431,7 @@ function calculate() {
 
     document.getElementById("result").innerText = JSON.stringify(result, null, 2);
 }
+
 
 // Your provided code ends here
 </script>
