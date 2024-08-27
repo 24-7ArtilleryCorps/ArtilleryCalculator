@@ -151,7 +151,8 @@
         
         <div class="result" id="result"></div>
         <!-- Canvas for Trajectory Path Visualization -->
-        <canvas id="trajectoryCanvas" width="800" height="400"></canvas>
+        <canvas id="trajectoryCanvas" width="800" height="600"></canvas>
+        <canvas id="mapCanvas" width="800" height="600"></canvas>
 
     </div>
 </div>
@@ -384,6 +385,10 @@ function main(eastingLauncher, northingLauncher, heightLauncher,
 
     // Output values
     drawTrajectoryPath(optimalAngleDegBelow, horizontalDistance, heightLauncher, heightTarget, projectileMass, projectileAirDrag, projectileVelocity);
+    const launcherPosition = { easting: 1000, northing: 1000 }; // This defines the launcher's position
+    const observerPosition = { easting: 1500, northing: 2000 };
+    const targetPosition = { easting: 2500, northing: 1500 };
+    drawMap(launcherPosition, observerPosition, targetPosition);
     return {
         horizontalDistance: horizontalDistance,
         bearingDeg: bearingDeg.toFixed(2),
@@ -392,6 +397,7 @@ function main(eastingLauncher, northingLauncher, heightLauncher,
         milsDirect: milsDirect,
         tofDirect: tofDirect.toFixed(2)
     };
+  
 }
 
 // Function to calculate target grid from observer data and calculate target height based on observer height and elevation difference
@@ -430,6 +436,106 @@ function calculate() {
                                     observerHeight, elevationDifference);
 
     document.getElementById("result").innerText = JSON.stringify(result, null, 2);
+}
+function drawMap(launcherPos, observerPos, targetPos) {
+    const canvas = document.getElementById('mapCanvas');
+    const ctx = canvas.getContext('2d');
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    const padding = 50; // Padding for the map area
+    const mapWidth = canvas.width - padding * 2;
+    const mapHeight = canvas.height - padding * 2;
+
+    // Determine the bounds based on the largest distance
+    const maxEasting = Math.max(launcherPos.easting, observerPos.easting, targetPos.easting) + 500;
+    const maxNorthing = Math.max(launcherPos.northing, observerPos.northing, targetPos.northing) + 500;
+
+    // Draw gridlines and labels
+    ctx.strokeStyle = '#444';
+    ctx.lineWidth = 1;
+    ctx.font = '12px Courier New';
+    ctx.fillStyle = '#00ff00';
+
+    // X-axis and Y-axis gridlines
+    for (let i = 0; i <= 10; i++) {
+        const x = padding + (i * mapWidth) / 10;
+        const y = padding + (i * mapHeight) / 10;
+
+        // Vertical gridlines
+        ctx.beginPath();
+        ctx.moveTo(x, padding);
+        ctx.lineTo(x, padding + mapHeight);
+        ctx.stroke();
+        ctx.fillText((maxEasting * i / 10).toFixed(0) + ' m', x - 10, padding + mapHeight + 20);
+
+        // Horizontal gridlines
+        ctx.beginPath();
+        ctx.moveTo(padding, y);
+        ctx.lineTo(padding + mapWidth, y);
+        ctx.stroke();
+        ctx.fillText((maxNorthing * (10 - i) / 10).toFixed(0) + ' m', padding - 45, y + 5);
+    }
+
+    // Draw positions
+    const launcherX = padding + (launcherPos.easting / maxEasting) * mapWidth;
+    const launcherY = padding + mapHeight - (launcherPos.northing / maxNorthing) * mapHeight;
+    const observerX = padding + (observerPos.easting / maxEasting) * mapWidth;
+    const observerY = padding + mapHeight - (observerPos.northing / maxNorthing) * mapHeight;
+    const targetX = padding + (targetPos.easting / maxEasting) * mapWidth;
+    const targetY = padding + mapHeight - (targetPos.northing / maxNorthing) * mapHeight;
+
+    // Draw Launcher
+    ctx.fillStyle = '#00ffff'; // Cyan for the launcher
+    ctx.beginPath();
+    ctx.arc(launcherX, launcherY, 5, 0, 2 * Math.PI);
+    ctx.fill();
+    ctx.fillText('Launcher', launcherX + 10, launcherY);
+
+    // Draw Observer
+    ctx.fillStyle = '#ff00ff'; // Magenta for the observer
+    ctx.beginPath();
+    ctx.arc(observerX, observerY, 5, 0, 2 * Math.PI);
+    ctx.fill();
+    ctx.fillText('Observer', observerX + 10, observerY);
+
+    // Draw Target
+    ctx.fillStyle = '#ff0000'; // Red for the target
+    ctx.beginPath();
+    ctx.arc(targetX, targetY, 5, 0, 2 * Math.PI);
+    ctx.fill();
+    ctx.fillText('Target', targetX + 10, targetY);
+
+    // Draw lines between points
+    ctx.strokeStyle = '#00ff00'; // Green lines connecting points
+    ctx.lineWidth = 2;
+
+    // Line from launcher to observer
+    ctx.beginPath();
+    ctx.moveTo(launcherX, launcherY);
+    ctx.lineTo(observerX, observerY);
+    ctx.stroke();
+
+    // Line from observer to target
+    ctx.beginPath();
+    ctx.moveTo(observerX, observerY);
+    ctx.lineTo(targetX, targetY);
+    ctx.stroke();
+
+    // Line from launcher to target
+    ctx.beginPath();
+    ctx.moveTo(launcherX, launcherY);
+    ctx.lineTo(targetX, targetY);
+    ctx.stroke();
+
+    // Display distances between points
+    const distanceLO = Math.sqrt(Math.pow(observerPos.easting - launcherPos.easting, 2) + Math.pow(observerPos.northing - launcherPos.northing, 2));
+    const distanceOT = Math.sqrt(Math.pow(targetPos.easting - observerPos.easting, 2) + Math.pow(targetPos.northing - observerPos.northing, 2));
+    const distanceLT = Math.sqrt(Math.pow(targetPos.easting - launcherPos.easting, 2) + Math.pow(targetPos.northing - launcherPos.northing, 2));
+
+    ctx.fillStyle = '#ffffff'; // White for text
+    ctx.fillText(`${distanceLO.toFixed(2)} m`, (launcherX + observerX) / 2, (launcherY + observerY) / 2);
+    ctx.fillText(`${distanceOT.toFixed(2)} m`, (observerX + targetX) / 2, (observerY + targetY) / 2);
+    ctx.fillText(`${distanceLT.toFixed(2)} m`, (launcherX + targetX) / 2, (launcherY + targetY) / 2);
 }
 
 
