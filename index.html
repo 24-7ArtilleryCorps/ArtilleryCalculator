@@ -83,173 +83,52 @@
             background-color: #4d0000;
             color: #ff9999;
         }
-
-        #mapCanvas {
-            width: 100%;
-            max-width: 800px;
-            height: 400px;
-            background-color: #000000;
-            border: 2px solid #00ff00;
-            margin-top: 20px;
-            position: relative;
-        }
-
-        .legend {
-            color: #00ff00;
-            font-family: 'Courier New', Courier, monospace;
-            margin-top: 20px;
-        }
-
-        .legend div {
-            display: inline-block;
-            margin-right: 20px;
-        }
-
-        .legend span {
-            display: inline-block;
-            width: 10px;
-            height: 10px;
-            margin-right: 5px;
-        }
-
-        /* Compass Rose */
-        .compass-rose {
-            position: absolute;
-            top: 20px;
-            right: 20px;
-            width: 80px;
-            height: 80px;
-            background: url('https://upload.wikimedia.org/wikipedia/commons/thumb/2/27/Compass_rose_dark_petal_4.svg/800px-Compass_rose_dark_petal_4.svg.png') no-repeat center center;
-            background-size: contain;
-        }
-
-        .discord-link {
-            color: #00ff00;
-            font-size: 18px;
-            text-decoration: none;
-            display: block;
-            margin-top: 10px;
-            font-weight: bold;
-        }
-
-        .discord-link:hover {
-            color: #00cc00;
-        }
-
-        .server-image {
-            width: 100%;
-            max-width: 300px;
-            margin: 20px auto;
-            display: block;
-        }
     </style>
 </head>
 <body>
 
 <div class="container">
     <h1>Artillery Elevation Calculator</h1>
-
-    <!-- Server Image -->
-    <img src="Logo maker project.png" alt="Server Logo" class="server-image">
-
-    <!-- Discord Link -->
-    <a href="https://discord.gg/grkfgh3EAh" class="discord-link" target="_blank">Join our Discord: https://discord.gg/grkfgh3EAh</a>
+    
     <div class="section">
-    <h2>Calculate Barrel Elevation</h2>
-    
-    <label for="distance">Enter Distance (meters):</label>
-    <input type="number" id="distance" placeholder="Enter distance in meters" required>
+        <h2>Calculate Barrel Elevation</h2>
+        
+        <label for="eastingLauncher">Easting Launcher:</label>
+        <input type="number" id="eastingLauncher" placeholder="Enter launcher Easting" value="1000">
 
-    <label for="launchHeight">Launch Height (meters):</label>
-    <input type="number" id="launchHeight" placeholder="Enter launch height in meters">
+        <label for="northingLauncher">Northing Launcher:</label>
+        <input type="number" id="northingLauncher" placeholder="Enter launcher Northing" value="1000">
 
-    <label for="targetHeight">Target Height (meters):</label>
-    <input type="number" id="targetHeight" placeholder="Enter target height in meters">
+        <label for="launchHeight">Launcher Height (meters):</label>
+        <input type="number" id="launchHeight" placeholder="Enter launcher height in meters" value="10">
 
-    <label for="projectileMass">Projectile Mass (kg):</label>
-    <input type="number" id="projectileMass" value="23" placeholder="Enter projectile mass in kg">
+        <label for="eastingObserver">Easting Observer:</label>
+        <input type="number" id="eastingObserver" placeholder="Enter observer Easting" value="7596">
 
-    <label for="airDrag">Projectile Air Drag:</label>
-    <input type="number" id="airDrag" value="0.0043" placeholder="Enter air drag coefficient">
+        <label for="northingObserver">Northing Observer:</label>
+        <input type="number" id="northingObserver" placeholder="Enter observer Northing" value="4299">
 
-    <label for="projectileVelocity">Projectile Velocity (m/s):</label>
-    <input type="number" id="projectileVelocity" value="212.5" placeholder="Enter projectile velocity in m/s">
+        <label for="observerBearing">Observer Bearing to Target (degrees):</label>
+        <input type="number" id="observerBearing" placeholder="Enter observer bearing to target in degrees" value="90">
 
-    <label for="fireMode">Fire Mode:</label>
-    <select id="fireMode">
-        <option value="direct">Direct Fire</option>
-        <option value="indirect">Indirect Fire</option>
-    </select>
+        <label for="observerRange">Observer Range to Target (meters):</label>
+        <input type="number" id="observerRange" placeholder="Enter observer range to target in meters" value="1000">
 
-    <button onclick="calculateElevation()">Calculate Elevation</button>
-    
-    <div class="result" id="result"></div>
-</div>
+        <label for="observerHeight">Observer Height (meters):</label>
+        <input type="number" id="observerHeight" placeholder="Enter observer height in meters" value="50">
 
+        <label for="elevationDifference">Elevation Difference to Target (meters):</label>
+        <input type="number" id="elevationDifference" placeholder="Enter elevation difference (Target - Observer)" value="70">
 
-<div class="section">
-    <h2>Calculate Target Details with Elevation</h2>
-    
-    <!-- Observer Details -->
-    <h3>Observer Details (Optional)</h3>
-    <label for="observer_x">Observer Easting:</label>
-    <input type="number" id="observer_x" placeholder="Enter observer Easting" value="0">
-    
-    <label for="observer_y">Observer Northing:</label>
-    <input type="number" id="observer_y" placeholder="Enter observer Northing" value="0">
-    
-    <label for="observer_bearing">Bearing from Observer (degrees):</label>
-    <input type="number" id="observer_bearing" placeholder="Enter bearing from observer" value="0">
-    
-    <label for="observer_distance">Distance from Observer (meters):</label>
-    <input type="number" id="observer_distance" placeholder="Enter distance from observer" value="0">
-    
-    <label for="observer_elevation">Observer Elevation (meters):</label>
-    <input type="number" id="observer_elevation" placeholder="Enter observer elevation" value="0">
-
-    <label for="elevation_difference">Elevation Difference to Target (meters):</label>
-    <input type="number" id="elevation_difference" placeholder="Enter elevation difference from observer to target" value="0">
-
-    <!-- Your Coordinates -->
-    <h3>Your Coordinates</h3>
-    <label for="your_x">Your Easting:</label>
-    <input type="number" id="your_x" placeholder="Enter your Easting" value="0">
-    
-    <label for="your_y">Your Northing:</label>
-    <input type="number" id="your_y" placeholder="Enter your Northing" value="0">
-    
-    <label for="your_elevation">Your Elevation (meters):</label>
-    <input type="number" id="your_elevation" placeholder="Enter your elevation" value="0">
-
-    <button onclick="calculateTargetDetails()">Calculate Target Details</button>
-    
-    <div class="result" id="targetResult"></div>
-</div>
-
-    <!-- Canvas for visualization -->
-    <div style="position: relative;">
-        <canvas id="mapCanvas" width="800" height="400"></canvas>
-        <div class="compass-rose"></div>
+        <button onclick="calculate()">Calculate</button>
+        
+        <div class="result" id="result"></div>
     </div>
-
-    <!-- Legend -->
-    <div class="legend">
-        <div><span style="background-color: cyan;"></span>Observer</div>
-       <div><span style="background-color: red;"></span>Target</div>
-        <div><span style="background-color: lime;"></span>Player</div>
-    </div>
-
-    <!-- Button to export the map as an image -->
-    <button onclick="exportMap()">Export Map as Image</button>
 </div>
-
-
-<!-- Include your script section here -->
 
 <script>
-// Variables to store the observer, target, and player coordinates globally
-let observer, target, player;
-// Constants
+// Your provided code starts here
+
 const g = 9.81;  // Acceleration due to gravity (m/s^2)
 
 // Convert degrees to mils
@@ -257,309 +136,160 @@ function degreesToMils(degrees) {
     return degrees * 17.7777777778;
 }
 
-// Convert mils to degrees
-function milsToDegrees(mils) {
-    return mils * 0.05625;
-}
-
-// Simulate trajectory based on the launch angle and other parameters
-function simulateTrajectory(angleDeg, targetRange, launchHeight, targetHeight, 
+// Function to simulate projectile trajectory
+function simulateTrajectory(angleDeg, targetRange, heightLauncher, heightTarget,
                             projectileMass = 23, projectileAirDrag = 0.0043, projectileVelocity = 212.5) {
     const angleRad = angleDeg * (Math.PI / 180);
-    let vx = projectileVelocity * Math.cos(angleRad);
-    let vy = projectileVelocity * Math.sin(angleRad);
-    let x = 0, y = launchHeight;
+    let vx0 = projectileVelocity * Math.cos(angleRad);
+    let vy0 = projectileVelocity * Math.sin(angleRad);
+    let x = 0;
+    let y = heightLauncher;
     const dt = 0.01;
     const tMax = 100;
-    let step;
 
-    for (step = 0; step < tMax / dt; step++) {
-        const v = Math.sqrt(vx * vx + vy * vy);
+    let timeOfFlight = 0;
+
+    for (let step = 0; step < tMax / dt; step++) {
+        timeOfFlight += dt;
+
+        const v = Math.sqrt(vx0 * vx0 + vy0 * vy0);
         const dragForce = (v !== 0) ? projectileAirDrag * v * v : 0;
-        const ax = -dragForce * vx / (projectileMass * v);
-        const ay = -g - (dragForce * vy / (projectileMass * v));
+        const ax = -dragForce * vx0 / (projectileMass * v);
+        const ay = -g - (dragForce * vy0 / (projectileMass * v));
 
-        const kx1 = vx * dt;
-        const ky1 = vy * dt;
-        const kvx1 = ax * dt;
-        const kvy1 = ay * dt;
+        vx0 += ax * dt;
+        vy0 += ay * dt;
+        x += vx0 * dt;
+        y += vy0 * dt;
 
-        const kx2 = (vx + kvx1 / 2) * dt;
-        const ky2 = (vy + kvy1 / 2) * dt;
-        const kvx2 = ax * dt;
-        const kvy2 = ay * dt;
-
-        const kx3 = (vx + kvx2 / 2) * dt;
-        const ky3 = (vy + kvy2 / 2) * dt;
-        const kvx3 = ax * dt;
-        const kvy3 = ay * dt;
-
-        const kx4 = (vx + kvx3) * dt;
-        const ky4 = (vy + kvy3) * dt;
-        const kvx4 = ax * dt;
-        const kvy4 = ay * dt;
-
-        x += (kx1 + 2 * kx2 + 2 * kx3 + kx4) / 6;
-        y += (ky1 + 2 * ky2 + 2 * ky3 + ky4) / 6;
-        vx += (kvx1 + 2 * kvx2 + 2 * kvx3 + kvx4) / 6;
-        vy += (kvy1 + 2 * kvy2 + 2 * kvy3 + kvy4) / 6;
-
-        if (x >= targetRange && y <= targetHeight) break;
-    }
-
-    return { x, y, timeOfFlight: step * dt };
-}
-// Objective function for the optimization
-function objectiveFunction(angleDeg, targetRange, launchHeight, targetHeight, 
-                           projectileMass, projectileAirDrag, projectileVelocity) {
-    const result = simulateTrajectory(angleDeg, targetRange, launchHeight, targetHeight, projectileMass, projectileAirDrag, projectileVelocity);
-    return Math.abs(result.x - targetRange) + Math.abs(result.y - targetHeight);
-}
-
-// Optimization function to find the best angle
-function optimizeAngle(targetRange, launchHeight, targetHeight, projectileMass, projectileAirDrag, projectileVelocity) {
-    // Simple binary search method to approximate the angle
-
-    function findOptimalAngle(low, high) {
-        while (high - low > 0.01) {
-            const mid = (low + high) / 2;
-            const fLow = objectiveFunction(low, targetRange, launchHeight, targetHeight, projectileMass, projectileAirDrag, projectileVelocity);
-            const fMid = objectiveFunction(mid, targetRange, launchHeight, targetHeight, projectileMass, projectileAirDrag, projectileVelocity);
-            if (fMid < fLow) {
-                high = mid;
-            } else {
-                low = mid;
-            }
+        if (x >= targetRange && y <= heightTarget) {
+            break;
         }
-        return low;
     }
 
-    const angleBelow45 = findOptimalAngle(0, 45);
-    const angleAbove45 = findOptimalAngle(45, 90);
-    
-    const directResult = simulateTrajectory(angleBelow45, targetRange, launchHeight, targetHeight, projectileMass, projectileAirDrag, projectileVelocity);
-    const indirectResult = simulateTrajectory(angleAbove45, targetRange, launchHeight, targetHeight, projectileMass, projectileAirDrag, projectileVelocity);
+    return { x, y, timeOfFlight };
+}
 
+// Objective function for optimization
+function objectiveFunction(angleDeg, targetRange, heightLauncher, heightTarget,
+                           projectileMass, projectileAirDrag, projectileVelocity) {
+    const { x: distanceTraveled, y: finalHeight } = simulateTrajectory(
+        angleDeg, targetRange, heightLauncher, heightTarget,
+        projectileMass, projectileAirDrag, projectileVelocity);
+
+    return Math.abs(distanceTraveled - targetRange) + Math.abs(finalHeight - heightTarget);
+}
+
+// Function to calculate the range and bearing
+function rangeCalculation(eastingLauncher, northingLauncher, heightLauncher,
+                          eastingTarget, northingTarget, heightTarget) {
+    const deltaEasting = eastingTarget - eastingLauncher;
+    const deltaNorthing = northingTarget - northingLauncher;
+    const horizontalDistance = Math.sqrt(deltaEasting * deltaEasting + deltaNorthing * deltaNorthing);
+
+    const bearingRad = Math.atan2(deltaEasting, deltaNorthing);
+    let bearingDeg = bearingRad * (180 / Math.PI);
+    if (bearingDeg < 0) {
+        bearingDeg += 360;
+    }
+
+    return { horizontalDistance, bearingDeg, heightLauncher, heightTarget };
+}
+
+// Golden-section search for optimal angle
+function goldenSectionSearch(lowerBound, upperBound, objectiveFunc, tol = 0.001) {
+    const phi = (1 + Math.sqrt(5)) / 2;
+    let c = upperBound - (upperBound - lowerBound) / phi;
+    let d = lowerBound + (upperBound - lowerBound) / phi;
+
+    while (Math.abs(c - d) > tol) {
+        if (objectiveFunc(c) < objectiveFunc(d)) {
+            upperBound = d;
+        } else {
+            lowerBound = c;
+        }
+        c = upperBound - (upperBound - lowerBound) / phi;
+        d = lowerBound + (upperBound - lowerBound) / phi;
+    }
+
+    return (upperBound + lowerBound) / 2;
+}
+
+// Main function
+function main(eastingLauncher, northingLauncher, heightLauncher,
+              eastingTarget, northingTarget, heightTarget,
+              projectileMass = 23, projectileAirDrag = 0.0043, projectileVelocity = 212.5) {
+
+    const { horizontalDistance, bearingDeg } = rangeCalculation(
+        eastingLauncher, northingLauncher, heightLauncher,
+        eastingTarget, northingTarget, heightTarget);
+
+      // Golden-section search to find the optimal launch angle below 45 degrees
+    const optimalAngleDegBelow = goldenSectionSearch(0, 45, angleDeg => 
+        objectiveFunction(angleDeg, horizontalDistance, heightLauncher, heightTarget, projectileMass, projectileAirDrag, projectileVelocity));
+    const milsDirect = Math.round(degreesToMils(optimalAngleDegBelow));
+    const { timeOfFlight: tofDirect } = simulateTrajectory(optimalAngleDegBelow, horizontalDistance, heightLauncher, heightTarget,
+                                                           projectileMass, projectileAirDrag, projectileVelocity);
+
+    // Golden-section search to find the optimal launch angle above 45 degrees
+    const optimalAngleDegAbove = goldenSectionSearch(45, 90, angleDeg =>
+        objectiveFunction(angleDeg, horizontalDistance, heightLauncher, heightTarget, projectileMass, projectileAirDrag, projectileVelocity));
+    const milsIndirect = Math.round(degreesToMils(optimalAngleDegAbove) - 17);
+    const { timeOfFlight: tofIndirect } = simulateTrajectory(optimalAngleDegAbove, horizontalDistance, heightLauncher, heightTarget,
+                                                             projectileMass, projectileAirDrag, projectileVelocity);
+
+    // Output values
     return {
-        direct_solution_mils: degreesToMils(angleBelow45),
-        direct_time_of_flight: directResult.timeOfFlight,
-        indirect_solution_mils: degreesToMils(angleAbove45) - 17,
-        indirect_time_of_flight: indirectResult.timeOfFlight
+        horizontalDistance: horizontalDistance,
+        bearingDeg: bearingDeg.toFixed(2),
+        milsIndirect: milsIndirect,
+        tofIndirect: tofIndirect.toFixed(2),
+        milsDirect: milsDirect,
+        tofDirect: tofDirect.toFixed(2)
     };
 }
 
-// Function to be called when user clicks the 'Calculate Elevation' button
-function calculateElevation() {
-    const distance = parseFloat(document.getElementById("distance").value);
-    const launchHeight = parseFloat(document.getElementById("your_elevation").value) || 0; // Using "Your Elevation"
-    const observerElevation = parseFloat(document.getElementById("observer_elevation").value) || 0;
-    const elevationDifference = parseFloat(document.getElementById("elevation_difference").value) || 0;
-    const targetHeight = observerElevation + elevationDifference; // Target Height derived from observer data
-    const projectileMass = parseFloat(document.getElementById("projectileMass").value) || 23;
-    const airDrag = parseFloat(document.getElementById("airDrag").value) || 0.0043;
-    const projectileVelocity = parseFloat(document.getElementById("projectileVelocity").value) || 212.5;
-    const fireMode = document.getElementById("fireMode").value;
-
-    if (isNaN(distance) || distance <= 0) {
-        document.getElementById('result').innerHTML = "<p class='error'>Please enter a valid distance.</p>";
-        return;
-    }
-
-    const result = optimizeAngle(distance, launchHeight, targetHeight, projectileMass, airDrag, projectileVelocity);
-
-    let elevationMil, timeOfFlight;
-    if (fireMode === 'direct') {
-        elevationMil = result.direct_solution_mils;
-        timeOfFlight = result.direct_time_of_flight;
-    } else {
-        elevationMil = result.indirect_solution_mils;
-        timeOfFlight = result.indirect_time_of_flight;
-    }
-
-    document.getElementById('result').innerHTML = `
-        <p>Elevation: ${elevationMil.toFixed(2)} mils</p>
-        <p>Time of Flight: ${timeOfFlight.toFixed(2)} seconds</p>
-    `;
-}
-
-
-
-function calculateTargetDetails() {
-    const observerEasting = parseFloat(document.getElementById("observer_x").value) || 0;
-    const observerNorthing = parseFloat(document.getElementById("observer_y").value) || 0;
-    const observerBearing = parseFloat(document.getElementById("observer_bearing").value) || 0;
-    const observerDistance = parseFloat(document.getElementById("observer_distance").value) || 0;
-    const observerElevation = parseFloat(document.getElementById("observer_elevation").value) || 0;
-    const elevationDifference = parseFloat(document.getElementById("elevation_difference").value) || 0;
-
-    const yourEasting = parseFloat(document.getElementById("your_x").value) || 0;
-    const yourNorthing = parseFloat(document.getElementById("your_y").value) || 0;
-    const yourElevation = parseFloat(document.getElementById("your_elevation").value) || 0;
+// Function to calculate target grid from observer data and calculate target height based on observer height and elevation difference
+function observerGridCalcWithElevation(northingLauncher, eastingLauncher, heightLauncher,
+                          eastingObserver, northingObserver, observerBearingToTarget, observerRangeToTarget,
+                          observerHeight, elevationDifference) {
     
-    const resultDiv = document.getElementById("targetResult");
+    // Convert bearing to radians
+    const bearingRad = observerBearingToTarget * (Math.PI / 180);
 
-    // Clear previous results
-    resultDiv.innerHTML = "";
+    // Calculate the target's easting and northing using the observer's bearing and range to the target
+    const eastingTarget = eastingObserver + observerRangeToTarget * Math.sin(bearingRad);
+    const northingTarget = northingObserver + observerRangeToTarget * Math.cos(bearingRad);
 
-    // Validate your coordinates and elevation
-    if (isNaN(yourEasting) || isNaN(yourNorthing) || isNaN(yourElevation)) {
-        resultDiv.innerHTML = "<p>Please enter valid values for your coordinates and elevation.</p>";
-        return;
-    }
+    // Calculate the target's height based on the observer's height and elevation difference
+    const heightTarget = observerHeight + elevationDifference;
 
-    // Calculate target coordinates using observer details
-    const bearing_rad = observerBearing * (Math.PI / 180);
-    const targetEasting = observerEasting + observerDistance * Math.cos(bearing_rad);
-    const targetNorthing = observerNorthing + observerDistance * Math.sin(bearing_rad);
-    const targetElevation = observerElevation + elevationDifference;
-
-    // Calculate the difference in coordinates between the player and the target
-    const deltaEasting = targetEasting - yourEasting;
-    const deltaNorthing = targetNorthing - yourNorthing;
-
-    // Calculate bearing from your position to the target
-    let bearingToTarget = Math.atan2(deltaNorthing, deltaEasting) * (180 / Math.PI);
-    if (bearingToTarget < 0) {
-        bearingToTarget += 360;
-    }
-
-    // Calculate the horizontal distance to the target
-    const horizontalDistanceToTarget = Math.sqrt(deltaEasting ** 2 + deltaNorthing ** 2);
-    
-    // Calculate the true distance to the target considering elevation
-    const trueDistanceToTarget = Math.sqrt(horizontalDistanceToTarget ** 2 + (targetElevation - yourElevation) ** 2);
-
-    // Display the results
-    resultDiv.innerHTML = `<p>Target Coordinates: (${targetEasting.toFixed(2)}, ${targetNorthing.toFixed(2)})</p>`;
-    resultDiv.innerHTML += `<p>Target Elevation: ${targetElevation.toFixed(2)} meters</p>`;
-    resultDiv.innerHTML += `<p>Horizontal Distance from Your Position to Target: ${horizontalDistanceToTarget.toFixed(2)} meters</p>`;
-    resultDiv.innerHTML += `<p>True Distance from Your Position to Target: ${trueDistanceToTarget.toFixed(2)} meters</p>`;
-    resultDiv.innerHTML += `<p>Bearing from Your Position to Target: ${bearingToTarget.toFixed(2)}°</p>`;
-
-    // Automatically fill the distance in the barrel elevation section
-    document.getElementById('distance').value = trueDistanceToTarget.toFixed(2);
-
-    // Update the global variables
-    observer = { easting: observerEasting, northing: observerNorthing };
-    target = { easting: targetEasting, northing: targetNorthing };
-    player = { easting: yourEasting, northing: yourNorthing };
-
-    // Draw the map using the correct coordinates
-    drawMap(observer, target, player);
-}
-function calculateScaleAndOffset(coordinates, canvasSize) {
-    const eastingValues = coordinates.map(coord => coord.easting);
-    const northingValues = coordinates.map(coord => coord.northing);
-
-    const minEasting = Math.min(...eastingValues);
-    const maxEasting = Math.max(...eastingValues);
-    const minNorthing = Math.min(...northingValues);
-    const maxNorthing = Math.max(...northingValues);
-
-    const padding = 40; // Safe margin in pixels
-    const scaleX = (canvasSize.width - 2 * padding) / (maxEasting - minEasting); // Adjust scale to account for padding
-    const scaleY = (canvasSize.height - 2 * padding) / (maxNorthing - minNorthing); // Adjust scale to account for padding
-    const scale = Math.min(scaleX, scaleY);
-
-    const offsetX = padding - minEasting * scale;
-    const offsetY = padding - minNorthing * scale;
-
-    return { scale, offsetX, offsetY };
+    // Return the results and call main to finalize the calculation
+    return main(eastingLauncher, northingLauncher, heightLauncher, eastingTarget, northingTarget, heightTarget);
 }
 
-function drawGrid(ctx, canvasSize, scale, offsetX, offsetY) {
-    const gridSize = 50; // Adjust grid size as needed
-    ctx.strokeStyle = '#444'; // Grid color
-    ctx.lineWidth = 1;
+// Calculate function that runs on button click
+function calculate() {
+    const eastingLauncher = parseFloat(document.getElementById("eastingLauncher").value);
+    const northingLauncher = parseFloat(document.getElementById("northingLauncher").value);
+    const heightLauncher = parseFloat(document.getElementById("launchHeight").value);
+    const eastingObserver = parseFloat(document.getElementById("eastingObserver").value);
+    const northingObserver = parseFloat(document.getElementById("northingObserver").value);
+    const observerBearingToTarget = parseFloat(document.getElementById("observerBearing").value);
+    const observerRangeToTarget = parseFloat(document.getElementById("observerRange").value);
+    const observerHeight = parseFloat(document.getElementById("observerHeight").value);
+    const elevationDifference = parseFloat(document.getElementById("elevationDifference").value);
 
-    // Draw vertical grid lines
-    for (let x = 0; x <= canvasSize.width; x += gridSize * scale) {
-        ctx.beginPath();
-        ctx.moveTo(x + offsetX % (gridSize * scale), 0);
-        ctx.lineTo(x + offsetX % (gridSize * scale), canvasSize.height);
-        ctx.stroke();
-    }
+    const result = observerGridCalcWithElevation(northingLauncher, eastingLauncher, heightLauncher,
+                                    eastingObserver, northingObserver, observerBearingToTarget, observerRangeToTarget,
+                                    observerHeight, elevationDifference);
 
-    // Draw horizontal grid lines
-    for (let y = 0; y <= canvasSize.height; y += gridSize * scale) {
-        ctx.beginPath();
-        ctx.moveTo(0, y + offsetY % (gridSize * scale));
-        ctx.lineTo(canvasSize.width, y + offsetY % (gridSize * scale));
-        ctx.stroke();
-    }
+    document.getElementById("result").innerText = JSON.stringify(result, null, 2);
 }
 
-function drawMap(observer, target, player) {
-    const canvas = document.getElementById('mapCanvas');
-    const ctx = canvas.getContext('2d');
-
-    // Calculate scale and offset
-    const canvasSize = { width: canvas.width, height: canvas.height };
-    const { scale, offsetX, offsetY } = calculateScaleAndOffset([observer, target, player], canvasSize);
-
-    // Clear the canvas
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-    // Draw the grid
-    drawGrid(ctx, canvasSize, scale, offsetX, offsetY);
-
-    // Draw the observer
-    ctx.fillStyle = 'cyan';
-    ctx.beginPath();
-    ctx.arc(observer.easting * scale + offsetX, observer.northing * scale + offsetY, 5, 0, 2 * Math.PI);
-    ctx.fill();
-    ctx.fillText('Observer', observer.easting * scale + offsetX + 10, observer.northing * scale + offsetY + 5);
-
-    // Draw the target
-    ctx.fillStyle = 'red';
-    ctx.beginPath();
-    ctx.arc(target.easting * scale + offsetX, target.northing * scale + offsetY, 5, 0, 2 * Math.PI);
-    ctx.fill();
-    ctx.fillText('Target', target.easting * scale + offsetX + 10, target.northing * scale + offsetY + 5);
-
-    // Draw the player
-    ctx.fillStyle = 'lime';
-    ctx.beginPath();
-    ctx.arc(player.easting * scale + offsetX, player.northing * scale + offsetY, 5, 0, 2 * Math.PI);
-    ctx.fill();
-    ctx.fillText('Player', player.easting * scale + offsetX + 10, player.northing * scale + offsetY + 5);
-
-    // Draw lines between observer and target, and player and target
-    ctx.strokeStyle = '#00ff00';
-    ctx.lineWidth = 2;
-
-    // Line from observer to target
-    ctx.beginPath();
-    ctx.moveTo(observer.easting * scale + offsetX, observer.northing * scale + offsetY);
-    ctx.lineTo(target.easting * scale + offsetX, target.northing * scale + offsetY);
-    ctx.stroke();
-
-    // Line from player to target
-    ctx.beginPath();
-    ctx.moveTo(player.easting * scale + offsetX, player.northing * scale + offsetY);
-    ctx.lineTo(target.easting * scale + offsetX, target.northing * scale + offsetY);
-    ctx.stroke();
-
-    // Display distance between points
-    const distanceOT = Math.sqrt(Math.pow(target.easting - observer.easting, 2) + Math.pow(target.northing - observer.northing, 2));
-    const distancePT = Math.sqrt(Math.pow(target.easting - player.easting, 2) + Math.pow(target.northing - player.northing, 2));
-
-    ctx.fillStyle = '#ffffff';
-    ctx.fillText(`${distanceOT.toFixed(2)} units`, (observer.easting + target.easting) * scale / 2 + offsetX, (observer.northing + target.northing) * scale / 2 + offsetY);
-    ctx.fillText(`${distancePT.toFixed(2)} units`, (player.easting + target.easting) * scale / 2 + offsetX, (player.northing + target.northing) * scale / 2 + offsetY);
-
-    // Automatically fill the distance in the barrel elevation section
-    document.getElementById('distance').value = distancePT.toFixed(2);
-}
-
-function exportMap() {
-    const canvas = document.getElementById('mapCanvas');
-    const link = document.createElement('a');
-    link.href = canvas.toDataURL('image/png');
-    link.download = 'artillery_map.png';
-    link.click();
-}
+// Your provided code ends here
 </script>
 
 </body>
 </html>
+
