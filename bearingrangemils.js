@@ -135,8 +135,8 @@ function observerGridCalc(northingLauncher, eastingLauncher, heightLauncher,
     // Return an object including the main result, eastingTarget, and northingTarget
     return {
         result: result,               // The output from the main function
-        updatedeastingTarget: eastingTarget, // Calculated eastingTarget
-        updatednorthingTarget: northingTarget // Calculated northingTarget
+        updatedEastingTarget: eastingTarget, // Calculated eastingTarget
+        updatedNorthingTarget: northingTarget // Calculated northingTarget
     };
 }
 
