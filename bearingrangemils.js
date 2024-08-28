@@ -119,7 +119,6 @@ function main(eastingLauncher, northingLauncher, heightLauncher,
     };
 }
 
-// Function to calculate target grid from observer data
 function observerGridCalc(northingLauncher, eastingLauncher, heightLauncher,
                           eastingObserver, northingObserver, observerBearingToTarget, observerRangeToTarget, heightTarget) {
     
@@ -130,8 +129,15 @@ function observerGridCalc(northingLauncher, eastingLauncher, heightLauncher,
     const eastingTarget = eastingObserver + observerRangeToTarget * Math.sin(bearingRad);
     const northingTarget = northingObserver + observerRangeToTarget * Math.cos(bearingRad);
 
-    // Return the results and call main to finalize the calculation
-    return main(eastingLauncher, northingLauncher, heightLauncher, eastingTarget, northingTarget, heightTarget);
+    // Call main to finalize the calculation
+    const result = main(eastingLauncher, northingLauncher, heightLauncher, eastingTarget, northingTarget, heightTarget);
+
+    // Return an object including the main result, eastingTarget, and northingTarget
+    return {
+        result: result,               // The output from the main function
+        updatedeastingTarget: eastingTarget, // Calculated eastingTarget
+        updatednorthingTarget: northingTarget // Calculated northingTarget
+    };
 }
 
 // Example usage
